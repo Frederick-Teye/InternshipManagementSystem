@@ -1,0 +1,233 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}Attendance Reports - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="fas fa-list-alt"></i> Attendance Reports</h2>
+      <a href="{% url 'attendance:pending_approvals' %}" class="btn btn-warning">
+        <i class="fas fa-clock"></i> Pending Approvals
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Section -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+      </div>
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-3">
+            <label for="status" class="form-label">Status</label>
+            <select name="status" id="status" class="form-select">
+              <option value="">All Status</option>
+              {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="intern" class="form-label">Intern</label>
+            <input type="text" name="intern" id="intern" class="form-control" 
+                   placeholder="Search by name or email" value="{{ request.GET.intern }}">
+          </div>
+          <div class="col-md-2">
+            <label for="date_from" class="form-label">From Date</label>
+            <input type="date" name="date_from" id="date_from" class="form-control" 
+                   value="{{ request.GET.date_from }}">
+          </div>
+          <div class="col-md-2">
+            <label for="date_to" class="form-label">To Date</label>
+            <input type="date" name="date_to" id="date_to" class="form-control" 
+                   value="{{ request.GET.date_to }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label d-block">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-search"></i> Apply Filters
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Attendance Table -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Attendance Records ({{ attendances.count }})</h5>
+        <div>
+          <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" 
+             class="btn btn-sm btn-success">
+            <i class="fas fa-file-excel"></i> Export CSV
+          </a>
+          <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
+             class="btn btn-sm btn-danger">
+            <i class="fas fa-file-pdf"></i> Export PDF
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if attendances %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Intern</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Duration</th>
+                  <th>Branch</th>
+                  <th>Status</th>
+                  <th>Approved By</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for attendance in attendances %}
+                  <tr>
+                    <td>
+                      <i class="fas fa-calendar"></i>
+                      {{ attendance.check_in_time|date:"M d, Y" }}
+                    </td>
+                    <td>
+                      <strong>{{ attendance.intern.user.get_full_name }}</strong><br>
+                      <small class="text-muted">{{ attendance.intern.user.email }}</small>
+                    </td>
+                    <td>
+                      <i class="fas fa-sign-in-alt text-success"></i>
+                      {{ attendance.check_in_time|time:"H:i" }}
+                    </td>
+                    <td>
+                      {% if attendance.check_out_time %}
+                        <i class="fas fa-sign-out-alt text-danger"></i>
+                        {{ attendance.check_out_time|time:"H:i" }}
+                      {% else %}
+                        <span class="badge bg-info">Still Active</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if attendance.check_out_time %}
+                        {% widthratio attendance.check_out_time|date:"U"|add:"0" 1 1 as checkout_seconds %}
+                        {% widthratio attendance.check_in_time|date:"U"|add:"0" 1 1 as checkin_seconds %}
+                        {% widthratio checkout_seconds|add:"-"|add:checkin_seconds 3600 1 as hours %}
+                        {% widthratio checkout_seconds|add:"-"|add:checkin_seconds 60 1 as total_minutes %}
+                        {% widthratio hours 1 60 as hour_minutes %}
+                        {% widthratio total_minutes|add:"-"|add:hour_minutes 1 1 as minutes %}
+                        {{ hours }}h {{ minutes }}m
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <i class="fas fa-building"></i>
+                      {{ attendance.branch.name }}
+                    </td>
+                    <td>
+                      {% if attendance.approval_status == 'approved' %}
+                        <span class="badge bg-success">
+                          <i class="fas fa-check"></i> Approved
+                        </span>
+                      {% elif attendance.approval_status == 'pending' %}
+                        <span class="badge bg-warning">
+                          <i class="fas fa-clock"></i> Pending
+                        </span>
+                      {% elif attendance.approval_status == 'rejected' %}
+                        <span class="badge bg-danger">
+                          <i class="fas fa-times"></i> Rejected
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if attendance.approved_by %}
+                        {{ attendance.approved_by.get_full_name }}<br>
+                        <small class="text-muted">{{ attendance.approval_date|date:"M d, H:i" }}</small>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if attendance.approval_status == 'pending' %}
+                        <a href="{% url 'attendance:approve' attendance.id %}" 
+                           class="btn btn-sm btn-primary">
+                          <i class="fas fa-check"></i> Review
+                        </a>
+                      {% else %}
+                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                          <i class="fas fa-eye"></i> View
+                        </button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No Attendance Records Found</h5>
+            <p class="text-muted">
+              {% if request.GET %}
+                Try adjusting your filters to see more results.
+              {% else %}
+                No attendance records have been submitted yet.
+              {% endif %}
+            </p>
+            {% if request.GET %}
+              <a href="{% url 'attendance:list' %}" class="btn btn-primary">
+                <i class="fas fa-redo"></i> Clear Filters
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Stats Section -->
+{% if attendances %}
+<div class="row mt-4">
+  <div class="col-md-4">
+    <div class="card border-success">
+      <div class="card-body text-center">
+        <i class="fas fa-list fa-2x text-success mb-2"></i>
+        <h4 class="mb-0">{{ attendances.count }}</h4>
+        <small class="text-muted">Total Records Displayed</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-info">
+      <div class="card-body text-center">
+        <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+        <h4 class="mb-0">{{ attendances.first.check_in_time|date:"M d, Y" }}</h4>
+        <small class="text-muted">Latest Record</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-primary">
+      <div class="card-body text-center">
+        <i class="fas fa-building fa-2x text-primary mb-2"></i>
+        <h4 class="mb-0">{{ attendances.first.branch.name|truncatechars:20 }}</h4>
+        <small class="text-muted">Latest Branch</small>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

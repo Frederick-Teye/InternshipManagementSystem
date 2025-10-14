@@ -100,7 +100,7 @@ def assessment_list(request):
         all_assessments = PerformanceAssessment.objects.filter(
             assessed_by=employee_profile
         )
-        my_interns = InternProfile.objects.filter(supervisor=employee_profile)
+        my_interns = InternProfile.objects.filter(internal_supervisor=employee_profile)
 
     # Filter by status if requested
     status_filter = request.GET.get("status", "all")

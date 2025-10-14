@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Count, Avg, Q
 
@@ -19,6 +20,26 @@ from apps.absenteeism.models import AbsenteeismRequest
 from apps.branches.models import Branch
 from apps.schools.models import School
 from apps.accounts.models import User
+
+
+@login_required
+def dashboard(request):
+    """Route users to their role-specific dashboard"""
+    user = request.user
+
+    if user.is_superuser or user.role == "admin":
+        return redirect("dashboards:admin")
+    elif user.role == "manager":
+        return redirect("dashboards:manager")
+    elif user.role == "supervisor":
+        return redirect("dashboards:supervisor")
+    elif user.role == "intern":
+        return redirect("dashboards:intern")
+    elif user.role == "employee":
+        return redirect("dashboards:employee")
+    else:
+        # Default to employee dashboard for any other role
+        return redirect("dashboards:employee")
 
 
 @intern_required
