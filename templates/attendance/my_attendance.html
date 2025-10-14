@@ -1,0 +1,144 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}My Attendance - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="fas fa-calendar-check"></i> My Attendance History</h2>
+      <a href="{% url 'attendance:mark' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle"></i> Mark Attendance
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card bg-success text-white">
+      <div class="card-body text-center">
+        <h2 class="mb-0">{{ stats.approved }}</h2>
+        <small>Approved</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-warning text-white">
+      <div class="card-body text-center">
+        <h2 class="mb-0">{{ stats.pending }}</h2>
+        <small>Pending</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-danger text-white">
+      <div class="card-body text-center">
+        <h2 class="mb-0">{{ stats.rejected }}</h2>
+        <small>Rejected</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-info text-white">
+      <div class="card-body text-center">
+        <h2 class="mb-0">{{ stats.total }}</h2>
+        <small>Total</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Attendance List -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        {% if attendances %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Branch</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for attendance in attendances %}
+                  <tr>
+                    <td>{{ attendance.check_in_time|date:"M d, Y" }}</td>
+                    <td>
+                      <i class="fas fa-clock text-primary"></i>
+                      {{ attendance.check_in_time|time:"H:i" }}
+                    </td>
+                    <td>
+                      {% if attendance.check_out_time %}
+                        <i class="fas fa-clock text-success"></i>
+                        {{ attendance.check_out_time|time:"H:i" }}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ attendance.branch.name }}</td>
+                    <td>
+                      {% if attendance.approval_status == 'approved' %}
+                        <span class="badge bg-success">
+                          <i class="fas fa-check"></i> Approved
+                        </span>
+                        {% if attendance.auto_approved %}
+                          <small class="text-muted">(Auto)</small>
+                        {% endif %}
+                      {% elif attendance.approval_status == 'pending' %}
+                        <span class="badge bg-warning">
+                          <i class="fas fa-clock"></i> Pending
+                        </span>
+                      {% else %}
+                        <span class="badge bg-danger">
+                          <i class="fas fa-times"></i> Rejected
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if not attendance.check_out_time and attendance.check_in_time.date == today %}
+                        <a href="{% url 'attendance:checkout' attendance.id %}" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-sign-out-alt"></i> Check Out
+                        </a>
+                      {% endif %}
+                      {% if attendance.notes %}
+                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="{{ attendance.notes }}">
+                          <i class="fas fa-info-circle"></i>
+                        </button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-5">
+            <i class="fas fa-calendar-times fa-4x mb-3"></i>
+            <p>No attendance records yet.</p>
+            <a href="{% url 'attendance:mark' %}" class="btn btn-primary">
+              Mark Your First Attendance
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+{% endblock %}

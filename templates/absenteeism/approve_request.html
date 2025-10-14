@@ -1,0 +1,144 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}Approve Request{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-check me-2"></i>Review Absence Request
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Left Column: Request Details -->
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>Request Details
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="text-muted">Intern</label>
+                                        <h6>{{ absence_request.intern.user.get_full_name }}</h6>
+                                        <small class="text-muted">{{ absence_request.intern.user.email }}</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="text-muted">Absence Period</label>
+                                        <h6>{{ absence_request.start_date|date:"F d, Y" }} - {{ absence_request.end_date|date:"F d, Y" }}</h6>
+                                        {% widthratio absence_request.end_date.toordinal absence_request.start_date.toordinal 1 as days %}
+                                        <small class="text-muted">{{ days|add:"1" }} day{{ days|add:"1"|pluralize }}</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="text-muted">Reason</label>
+                                        <div class="p-3 bg-white rounded border">
+                                            {{ absence_request.reason|linebreaks }}
+                                        </div>
+                                    </div>
+
+                                    {% if absence_request.supporting_document %}
+                                    <div class="mb-3">
+                                        <label class="text-muted">Supporting Document</label>
+                                        <div>
+                                            <a href="{{ absence_request.supporting_document.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-file-download me-1"></i>Download Document
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="mb-0">
+                                        <label class="text-muted">Submitted</label>
+                                        <h6>{{ absence_request.submitted_at|date:"F d, Y g:i A" }}</h6>
+                                        <small class="text-muted">{{ absence_request.submitted_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Decision Form -->
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clipboard-check me-2"></i>Your Decision
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        
+                                        <div class="mb-4">
+                                            <label class="form-label">
+                                                <strong>Decision</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <div>
+                                                {% for radio in form.decision %}
+                                                    <div class="form-check mb-2">
+                                                        {{ radio.tag }}
+                                                        <label class="form-check-label ms-2" for="{{ radio.id_for_label }}">
+                                                            {% if radio.choice_label == 'Approve' %}
+                                                                <i class="fas fa-check-circle text-success me-1"></i>Approve Request
+                                                            {% else %}
+                                                                <i class="fas fa-times-circle text-danger me-1"></i>Reject Request
+                                                            {% endif %}
+                                                        </label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% if form.decision.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.decision.errors|first }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="{{ form.decision_note.id_for_label }}" class="form-label">
+                                                <strong>Note</strong>
+                                            </label>
+                                            {{ form.decision_note }}
+                                            <div class="form-text">
+                                                Optional for approval, required for rejection
+                                            </div>
+                                            {% if form.decision_note.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.decision_note.errors|first }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                {{ form.non_field_errors }}
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-success btn-lg">
+                                                <i class="fas fa-check me-2"></i>Submit Decision
+                                            </button>
+                                            <a href="{% url 'absenteeism:pending_requests' %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-arrow-left me-2"></i>Back to Pending
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

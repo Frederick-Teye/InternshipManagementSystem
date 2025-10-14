@@ -1,0 +1,171 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}Mark Attendance - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title mb-0">
+          <i class="fas fa-map-marker-alt"></i> Mark Your Attendance
+        </h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          <strong>Location Services Required:</strong> Please allow location access when prompted.
+          Your attendance will be auto-approved if you're within {{ branch.proximity_threshold_meters }}m of the branch location.
+        </div>
+
+        <div class="mb-4">
+          <h6>Branch Information</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <strong>Branch:</strong> {{ branch.name }}
+            </div>
+            <div class="col-md-6">
+              <strong>Date:</strong> {{ today|date:"l, F j, Y" }}
+            </div>
+          </div>
+          <div class="mt-2">
+            <strong>Address:</strong> {{ branch.address_line1 }}{% if branch.city %}, {{ branch.city }}{% endif %}
+          </div>
+        </div>
+
+        <div id="location-status" class="alert alert-warning">
+          <i class="fas fa-spinner fa-spin"></i> Requesting location access...
+        </div>
+
+        <form method="post" id="attendance-form" style="display: none;">
+          {% csrf_token %}
+          {{ form.latitude }}
+          {{ form.longitude }}
+          {{ form.location_accuracy_m }}
+          
+          <div class="mb-3">
+            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes (Optional)</label>
+            {{ form.notes }}
+          </div>
+
+          <div id="location-info" class="mb-3 p-3 bg-light rounded" style="display: none;">
+            <h6>Location Information</h6>
+            <div class="row">
+              <div class="col-md-6">
+                <small><strong>Latitude:</strong> <span id="display-lat"></span></small>
+              </div>
+              <div class="col-md-6">
+                <small><strong>Longitude:</strong> <span id="display-lon"></span></small>
+              </div>
+              <div class="col-md-6 mt-2">
+                <small><strong>Accuracy:</strong> <span id="display-accuracy"></span>m</small>
+              </div>
+              <div class="col-md-6 mt-2">
+                <small><strong>Distance from branch:</strong> <span id="display-distance"></span></small>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success btn-lg" id="submit-btn">
+              <i class="fas fa-check-circle"></i> Mark Attendance
+            </button>
+            <a href="{% url 'attendance:my_attendance' %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('attendance-form');
+    const statusDiv = document.getElementById('location-status');
+    const locationInfo = document.getElementById('location-info');
+    
+    const branchLat = {{ branch.latitude|default:"null" }};
+    const branchLon = {{ branch.longitude|default:"null" }};
+    const threshold = {{ branch.proximity_threshold_meters }};
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000; // Earth's radius in meters
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c;
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+
+                // Populate form fields
+                document.getElementById('id_latitude').value = lat;
+                document.getElementById('id_longitude').value = lon;
+                document.getElementById('id_location_accuracy_m').value = accuracy;
+
+                // Display location info
+                document.getElementById('display-lat').textContent = lat.toFixed(6);
+                document.getElementById('display-lon').textContent = lon.toFixed(6);
+                document.getElementById('display-accuracy').textContent = accuracy.toFixed(1);
+
+                // Calculate and display distance
+                if (branchLat && branchLon) {
+                    const distance = calculateDistance(lat, lon, branchLat, branchLon);
+                    document.getElementById('display-distance').textContent = distance.toFixed(0) + 'm';
+                    
+                    if (distance <= threshold) {
+                        statusDiv.className = 'alert alert-success';
+                        statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> <strong>Location verified!</strong> You are within range for auto-approval.';
+                    } else {
+                        statusDiv.className = 'alert alert-warning';
+                        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <strong>Out of range.</strong> You are ' + distance.toFixed(0) + 'm from the branch. Attendance will require supervisor approval.';
+                    }
+                } else {
+                    statusDiv.className = 'alert alert-info';
+                    statusDiv.innerHTML = '<i class="fas fa-info-circle"></i> Branch coordinates not set. Attendance will require supervisor approval.';
+                }
+
+                locationInfo.style.display = 'block';
+                form.style.display = 'block';
+            },
+            function(error) {
+                statusDiv.className = 'alert alert-danger';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> <strong>Location access denied.</strong> Please enable location services to mark attendance.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> <strong>Location unavailable.</strong> Please check your device settings.';
+                        break;
+                    case error.TIMEOUT:
+                        statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> <strong>Request timeout.</strong> Please try again.';
+                        break;
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> <strong>Geolocation not supported.</strong> Your browser does not support location services.';
+    }
+});
+</script>
+{% endblock %}

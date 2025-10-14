@@ -1,0 +1,118 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}Request Absence{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-times me-2"></i>Request Absence
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Submit your absence request in advance. Your supervisor will review and approve or reject it.
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                                    <strong>{{ form.start_date.label }}</strong>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.start_date.errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                    <strong>{{ form.end_date.label }}</strong>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.end_date.errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">
+                                <strong>{{ form.reason.label }}</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.reason }}
+                            <div class="form-text">Provide a clear and detailed reason for your absence</div>
+                            {% if form.reason.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.reason.errors|first }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.supporting_document.id_for_label }}" class="form-label">
+                                <strong>{{ form.supporting_document.label }}</strong>
+                            </label>
+                            {{ form.supporting_document }}
+                            <div class="form-text">{{ form.supporting_document.help_text }}</div>
+                            {% if form.supporting_document.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.supporting_document.errors|first }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'absenteeism:my_requests' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to My Requests
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Guidelines Card -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-book me-2"></i>Absence Request Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Submit requests at least 24 hours in advance when possible</li>
+                        <li>For medical reasons, attach a medical certificate</li>
+                        <li>For emergencies, submit as soon as possible and explain the situation</li>
+                        <li>You will be notified once your request is reviewed</li>
+                        <li>Approved absences will be reflected in your attendance record</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

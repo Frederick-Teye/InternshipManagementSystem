@@ -1,0 +1,157 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}My Assessments{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 mb-2">My Performance Assessments</h1>
+            <p class="text-muted">Track your weekly performance evaluations and self-assessments</p>
+        </div>
+    </div>
+
+    {% if assessments %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Week</th>
+                                        <th>Period</th>
+                                        <th>Supervisor</th>
+                                        <th>Status</th>
+                                        <th>Supervisor Score</th>
+                                        <th>My Self-Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for assessment in assessments %}
+                                    <tr>
+                                        <td><strong>Week {{ assessment.week_number }}</strong></td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ assessment.period_start|date:"M d" }} - {{ assessment.period_end|date:"M d, Y" }}
+                                            </small>
+                                        </td>
+                                        <td>{{ assessment.assessed_by.user.get_full_name }}</td>
+                                        <td>
+                                            {% if assessment.status == 'draft' %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-pencil-alt me-1"></i>Draft
+                                                </span>
+                                            {% elif assessment.status == 'submitted' %}
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-clock me-1"></i>Awaiting Review
+                                                </span>
+                                            {% elif assessment.status == 'reviewed' %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Reviewed
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if assessment.supervisor_score is not None %}
+                                                <span class="badge {% if assessment.supervisor_score >= 70 %}bg-success{% elif assessment.supervisor_score >= 50 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                                    {{ assessment.supervisor_score }}/100
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if assessment.intern_score is not None %}
+                                                <span class="badge bg-primary fs-6">
+                                                    {{ assessment.intern_score }}/100
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if assessment.status == 'draft' and assessment.intern_score is None %}
+                                                <a href="{% url 'evaluations:self_assessment' assessment.id %}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit me-1"></i>Complete Self-Assessment
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'evaluations:view_assessment' assessment.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ total_assessments }}</h3>
+                        <p class="text-muted mb-0">Total Assessments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ completed_count }}</h3>
+                        <p class="text-muted mb-0">Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning">{{ pending_count }}</h3>
+                        <p class="text-muted mb-0">Pending Action</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if average_score %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Average Supervisor Score</h5>
+                        <h2 class="display-4 
+                            {% if average_score >= 70 %}text-success
+                            {% elif average_score >= 50 %}text-warning
+                            {% else %}text-danger{% endif %}">
+                            {{ average_score|floatformat:1 }}/100
+                        </h2>
+                        <p class="text-muted">Based on {{ reviewed_count }} reviewed assessment{{ reviewed_count|pluralize }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                    <h3>No Assessments Yet</h3>
+                    <p class="text-muted">Your supervisor will create performance assessments for you to complete.</p>
+                    <p class="text-muted">Check back regularly for new assessment requests.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

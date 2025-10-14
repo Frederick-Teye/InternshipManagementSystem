@@ -1,0 +1,82 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}Pending Absence Requests{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 mb-2">Pending Absence Requests</h1>
+            <p class="text-muted">Review and approve or reject intern absence requests</p>
+        </div>
+    </div>
+
+    {% if requests %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Intern</th>
+                                        <th>Period</th>
+                                        <th>Days</th>
+                                        <th>Reason</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in requests %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ req.intern.user.get_full_name }}</strong><br>
+                                            <small class="text-muted">{{ req.intern.user.email }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ req.start_date|date:"M d" }}</strong> - <strong>{{ req.end_date|date:"M d, Y" }}</strong>
+                                        </td>
+                                        <td>
+                                            {% widthratio req.end_date.toordinal req.start_date.toordinal 1 as days %}
+                                            <span class="badge bg-secondary">{{ days|add:"1" }} day{{ days|add:"1"|pluralize }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ req.reason|truncatewords:15 }}</small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ req.submitted_at|timesince }} ago</small>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'absenteeism:approve' req.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-check me-1"></i>Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                    <h3>All Caught Up!</h3>
+                    <p class="text-muted">There are no pending absence requests to review.</p>
+                    <a href="{% url 'absenteeism:request_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>View All Requests
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

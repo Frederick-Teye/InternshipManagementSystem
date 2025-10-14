@@ -1,0 +1,149 @@
+{% extends "dashboards/base.html" %}
+
+{% block nav_items %}
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'attendance:list' %}"><i class="fas fa-calendar-check"></i> Attendance</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'evaluations:assessment_list' %}"><i class="fas fa-star"></i> Assessments</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#"><i class="fas fa-users"></i> Interns</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
+  </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="mb-1">Manager Dashboard 📊</h1>
+        <p class="text-muted mb-0">Overview of all internship operations</p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <div class="text-muted small">Today</div>
+        <div class="fw-bold">{{ today|date:"M j, Y" }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="fas fa-users fa-2x text-primary mb-2"></i>
+        <h3 class="mb-0">{{ total_interns|default:0 }}</h3>
+        <p class="text-muted mb-0">Total Interns</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="fas fa-user-tie fa-2x text-success mb-2"></i>
+        <h3 class="mb-0">{{ total_supervisors|default:0 }}</h3>
+        <p class="text-muted mb-0">Supervisors</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="fas fa-map-marker-alt fa-2x text-warning mb-2"></i>
+        <h3 class="mb-0">{{ total_branches|default:0 }}</h3>
+        <p class="text-muted mb-0">Branches</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="fas fa-clipboard-check fa-2x text-info mb-2"></i>
+        <h3 class="mb-0">{{ total_assessments|default:0 }}</h3>
+        <p class="text-muted mb-0">Assessments</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Quick Actions -->
+  <div class="col-lg-8 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-bolt text-warning"></i> Quick Actions</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <a href="{% url 'evaluations:assessment_list' %}" class="quick-action-btn">
+              <i class="fas fa-star text-primary"></i>
+              <span>View All Assessments</span>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a href="{% url 'attendance:list' %}" class="quick-action-btn">
+              <i class="fas fa-calendar-check text-success"></i>
+              <span>View Attendance Records</span>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a href="#" class="quick-action-btn">
+              <i class="fas fa-user-plus text-info"></i>
+              <span>Manage Users</span>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a href="#" class="quick-action-btn">
+              <i class="fas fa-file-export text-warning"></i>
+              <span>Export Reports</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </card>
+  </div>
+
+  <!-- Pending Items -->
+  <div class="col-lg-4 mb-4">
+    <div class="card">
+      <div class="card-header bg-warning text-white">
+        <h6 class="mb-0"><i class="fas fa-exclamation-circle"></i> Pending Items</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+          <span>Pending Attendance</span>
+          <span class="badge bg-warning">{{ pending_attendance|default:0 }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <span>Pending Assessments</span>
+          <span class="badge bg-info">{{ pending_assessments|default:0 }}</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span>Absence Requests</span>
+          <span class="badge bg-secondary">{{ pending_absences|default:0 }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-history"></i> Recent Activity</h5>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">System-wide activity logs and updates will appear here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

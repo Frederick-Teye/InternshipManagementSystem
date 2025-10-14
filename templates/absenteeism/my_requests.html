@@ -1,0 +1,144 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}My Absence Requests{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6 mb-2">My Absence Requests</h1>
+            <p class="text-muted">Track your absence requests and their approval status</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'absenteeism:request' %}" class="btn btn-warning">
+                <i class="fas fa-plus me-2"></i>Request Absence
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_requests }}</h3>
+                    <p class="text-muted mb-0">Total Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ pending_count }}</h3>
+                    <p class="text-muted mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ approved_count }}</h3>
+                    <p class="text-muted mb-0">Approved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-danger">{{ rejected_count }}</h3>
+                    <p class="text-muted mb-0">Rejected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if requests %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Days</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in requests %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ req.start_date|date:"M d, Y" }}</strong><br>
+                                            <small class="text-muted">to {{ req.end_date|date:"M d, Y" }}</small>
+                                        </td>
+                                        <td>
+                                            {% widthratio req.end_date.toordinal req.start_date.toordinal 1 as days %}
+                                            <span class="badge bg-secondary">{{ days|add:"1" }} day{{ days|add:"1"|pluralize }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ req.reason|truncatewords:10 }}</small>
+                                        </td>
+                                        <td>
+                                            {% if req.status == 'pending' %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock me-1"></i>Pending
+                                                </span>
+                                            {% elif req.status == 'approved' %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Approved
+                                                </span>
+                                            {% elif req.status == 'rejected' %}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times-circle me-1"></i>Rejected
+                                                </span>
+                                            {% elif req.status == 'cancelled' %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-ban me-1"></i>Cancelled
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ req.submitted_at|date:"M d, Y g:i A" }}</small>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'absenteeism:view' req.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                                            {% if req.status == 'pending' %}
+                                                <a href="{% url 'absenteeism:cancel' req.id %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-times me-1"></i>Cancel
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h3>No Absence Requests Yet</h3>
+                    <p class="text-muted">You haven't submitted any absence requests.</p>
+                    <a href="{% url 'absenteeism:request' %}" class="btn btn-warning">
+                        <i class="fas fa-plus me-2"></i>Submit Your First Request
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

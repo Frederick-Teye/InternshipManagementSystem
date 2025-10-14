@@ -1,0 +1,172 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}Assess Intern{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-check me-2"></i>Supervisor Assessment - Week {{ assessment.week_number }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Left Column: Intern's Self-Assessment -->
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user me-2"></i>Intern's Self-Assessment
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Intern:</strong> {{ assessment.intern.user.get_full_name }}<br>
+                                        <strong>Period:</strong> {{ assessment.period_start|date:"M d" }} - {{ assessment.period_end|date:"M d, Y" }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Self-Score</label>
+                                        {% if assessment.intern_score is not None %}
+                                            <h2 class="text-primary">{{ assessment.intern_score }}/100</h2>
+                                        {% else %}
+                                            <p class="text-muted fst-italic">Not yet submitted</p>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mb-0">
+                                        <label class="form-label text-muted">Self-Reflection</label>
+                                        {% if assessment.intern_note %}
+                                            <div class="p-3 bg-white rounded border">
+                                                {{ assessment.intern_note|linebreaks }}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted fst-italic">No reflection provided</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Supervisor Assessment Form -->
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-clipboard-check me-2"></i>Your Supervisor Assessment
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        
+                                        <div class="mb-4">
+                                            <label for="{{ form.supervisor_score.id_for_label }}" class="form-label">
+                                                <strong>Your Score (0-100)</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="number" 
+                                                   name="{{ form.supervisor_score.name }}" 
+                                                   id="{{ form.supervisor_score.id_for_label }}"
+                                                   class="form-control form-control-lg {% if form.supervisor_score.errors %}is-invalid{% endif %}"
+                                                   min="0" 
+                                                   max="100" 
+                                                   value="{{ form.supervisor_score.value|default:'' }}"
+                                                   required>
+                                            <div class="form-text">Rate the intern's performance (0-100)</div>
+                                            {% if form.supervisor_score.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ form.supervisor_score.errors|first }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="{{ form.supervisor_note.id_for_label }}" class="form-label">
+                                                <strong>Detailed Feedback</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <textarea name="{{ form.supervisor_note.name }}" 
+                                                      id="{{ form.supervisor_note.id_for_label }}"
+                                                      class="form-control {% if form.supervisor_note.errors %}is-invalid{% endif %}"
+                                                      rows="10" 
+                                                      required>{{ form.supervisor_note.value|default:'' }}</textarea>
+                                            <div class="form-text">
+                                                Provide comprehensive feedback:
+                                                <ul class="mt-2 mb-0 small">
+                                                    <li>Strengths demonstrated</li>
+                                                    <li>Areas for improvement</li>
+                                                    <li>Specific achievements</li>
+                                                    <li>Learning progress</li>
+                                                    <li>Recommendations</li>
+                                                </ul>
+                                            </div>
+                                            {% if form.supervisor_note.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ form.supervisor_note.errors|first }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                {{ form.non_field_errors }}
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-success btn-lg">
+                                                <i class="fas fa-check-circle me-2"></i>Complete Assessment
+                                            </button>
+                                            <a href="{% url 'evaluations:assessment_list' %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guidelines -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-star me-2"></i>Assessment Guidelines
+                                    </h6>
+                                    <div class="row small">
+                                        <div class="col-md-6">
+                                            <strong>Scoring Guide:</strong>
+                                            <ul>
+                                                <li><strong>90-100:</strong> Exceptional - Exceeds expectations</li>
+                                                <li><strong>70-89:</strong> Good - Meets expectations well</li>
+                                                <li><strong>50-69:</strong> Satisfactory - Meets basic expectations</li>
+                                                <li><strong>Below 50:</strong> Needs improvement</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Feedback Tips:</strong>
+                                            <ul>
+                                                <li>Be specific and provide examples</li>
+                                                <li>Balance positive and constructive feedback</li>
+                                                <li>Focus on observable behaviors</li>
+                                                <li>Provide actionable recommendations</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

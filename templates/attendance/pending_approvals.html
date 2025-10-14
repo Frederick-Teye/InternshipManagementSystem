@@ -1,0 +1,88 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}Pending Attendance Approvals - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+  <div class="col-12">
+    <h2 class="mb-4">
+      <i class="fas fa-clipboard-check"></i> Pending Attendance Approvals
+      {% if pending_attendances %}
+        <span class="badge bg-warning">{{ pending_attendances.count }}</span>
+      {% endif %}
+    </h2>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        {% if pending_attendances %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Intern</th>
+                  <th>Branch</th>
+                  <th>Date & Time</th>
+                  <th>Location</th>
+                  <th>Distance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for attendance in pending_attendances %}
+                  <tr>
+                    <td>
+                      <strong>{{ attendance.intern.user.get_full_name }}</strong><br>
+                      <small class="text-muted">{{ attendance.intern.user.email }}</small>
+                    </td>
+                    <td>{{ attendance.branch.name }}</td>
+                    <td>
+                      {{ attendance.check_in_time|date:"M d, Y" }}<br>
+                      <small class="text-muted">{{ attendance.check_in_time|time:"H:i" }}</small>
+                    </td>
+                    <td>
+                      <small>
+                        {{ attendance.latitude|floatformat:4 }}, {{ attendance.longitude|floatformat:4 }}
+                        {% if attendance.location_accuracy_m %}
+                          <br>±{{ attendance.location_accuracy_m|floatformat:0 }}m accuracy
+                        {% endif %}
+                      </small>
+                    </td>
+                    <td>
+                      {% with distance=attendance.distance_from_branch %}
+                        {% if distance %}
+                          {% if distance <= attendance.branch.proximity_threshold_meters %}
+                            <span class="badge bg-success">{{ distance|floatformat:0 }}m</span>
+                          {% else %}
+                            <span class="badge bg-warning">{{ distance|floatformat:0 }}m</span>
+                          {% endif %}
+                        {% else %}
+                          <span class="text-muted">-</span>
+                        {% endif %}
+                      {% endwith %}
+                    </td>
+                    <td>
+                      <a href="{% url 'attendance:approve' attendance.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> Review
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-5">
+            <i class="fas fa-check-circle fa-4x mb-3 text-success"></i>
+            <h4>All Caught Up!</h4>
+            <p>No pending attendance approvals at this time.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

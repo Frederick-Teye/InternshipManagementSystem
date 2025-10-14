@@ -1,0 +1,47 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}Cancel Request{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Cancel Absence Request
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Are you sure you want to cancel this absence request?
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-muted">Request Details:</h6>
+                        <p class="mb-1"><strong>Period:</strong> {{ absence_request.start_date|date:"F d, Y" }} - {{ absence_request.end_date|date:"F d, Y" }}</p>
+                        <p class="mb-1"><strong>Reason:</strong> {{ absence_request.reason|truncatewords:20 }}</p>
+                        <p class="mb-0"><strong>Status:</strong> 
+                            <span class="badge bg-warning">Pending</span>
+                        </p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'absenteeism:my_requests' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Go Back
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Yes, Cancel Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "dashboards/base.html" %}
+{% load static %}
+
+{% block title %}View Request{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calendar-times me-2"></i>Absence Request Details
+                        </h4>
+                        {% if absence_request.status == 'approved' %}
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle me-1"></i>Approved
+                            </span>
+                        {% elif absence_request.status == 'rejected' %}
+                            <span class="badge bg-danger fs-6">
+                                <i class="fas fa-times-circle me-1"></i>Rejected
+                            </span>
+                        {% elif absence_request.status == 'pending' %}
+                            <span class="badge bg-warning fs-6">
+                                <i class="fas fa-clock me-1"></i>Pending
+                            </span>
+                        {% elif absence_request.status == 'cancelled' %}
+                            <span class="badge bg-secondary fs-6">
+                                <i class="fas fa-ban me-1"></i>Cancelled
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Intern:</strong> {{ absence_request.intern.user.get_full_name }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ absence_request.intern.user.email }}</p>
+                            {% if absence_request.intern.school %}
+                                <p class="mb-0"><strong>School:</strong> {{ absence_request.intern.school.name }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Submitted:</strong> {{ absence_request.submitted_at|date:"F d, Y g:i A" }}</p>
+                            {% if absence_request.decision_at %}
+                                <p class="mb-1"><strong>Decision Date:</strong> {{ absence_request.decision_at|date:"F d, Y g:i A" }}</p>
+                            {% endif %}
+                            {% if absence_request.approver %}
+                                <p class="mb-0"><strong>Reviewed By:</strong> {{ absence_request.approver.get_full_name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Absence Period -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>Absence Period
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Start Date</h6>
+                            <h4 class="text-primary">{{ absence_request.start_date|date:"M d, Y" }}</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">End Date</h6>
+                            <h4 class="text-primary">{{ absence_request.end_date|date:"M d, Y" }}</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Duration</h6>
+                            {% widthratio absence_request.end_date.toordinal absence_request.start_date.toordinal 1 as days %}
+                            <h4 class="text-primary">{{ days|add:"1" }} Day{{ days|add:"1"|pluralize }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reason -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-comment-alt me-2"></i>Reason for Absence
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="p-3 bg-light rounded">
+                        {{ absence_request.reason|linebreaks }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supporting Document -->
+            {% if absence_request.supporting_document %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-file me-2"></i>Supporting Document
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <a href="{{ absence_request.supporting_document.url }}" target="_blank" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-2"></i>Download Document
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Decision -->
+            {% if absence_request.status in 'approved,rejected' and absence_request.decision_note %}
+            <div class="card mb-4">
+                <div class="card-header {% if absence_request.status == 'approved' %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>Decision Note
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="p-3 bg-light rounded">
+                        {{ absence_request.decision_note|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% if user.role == 'intern' %}{% url 'absenteeism:my_requests' %}{% else %}{% url 'absenteeism:request_list' %}{% endif %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Requests
+                        </a>
+                        
+                        <div>
+                            {% if user.role == 'intern' and absence_request.status == 'pending' %}
+                                <a href="{% url 'absenteeism:cancel' absence_request.id %}" class="btn btn-danger">
+                                    <i class="fas fa-times me-2"></i>Cancel Request
+                                </a>
+                            {% elif can_approve and absence_request.status == 'pending' %}
+                                <a href="{% url 'absenteeism:approve' absence_request.id %}" class="btn btn-success">
+                                    <i class="fas fa-check me-2"></i>Review Request
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
