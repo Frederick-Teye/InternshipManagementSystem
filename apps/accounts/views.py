@@ -142,7 +142,7 @@ def dashboard_view(request):
     """Role-based dashboard redirect"""
     user = request.user
 
-    if user.role == User.Roles.ADMIN:
+    if user.is_superuser or user.role == User.Roles.ADMIN:
         return redirect("dashboards:admin")
     elif user.role == User.Roles.MANAGER:
         return redirect("dashboards:manager")
@@ -150,8 +150,11 @@ def dashboard_view(request):
         return redirect("dashboards:supervisor")
     elif user.role == User.Roles.EMPLOYEE:
         return redirect("dashboards:employee")
-    else:  # INTERN
+    elif user.role == User.Roles.INTERN:
         return redirect("dashboards:intern")
+    else:
+        # Default to admin for any undefined role
+        return redirect("dashboards:admin")
 
 
 # Custom password reset views with custom templates

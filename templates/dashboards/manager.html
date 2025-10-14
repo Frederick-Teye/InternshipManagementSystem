@@ -2,13 +2,16 @@
 
 {% block nav_items %}
   <li class="nav-item">
+    <a class="nav-link" href="{% url 'interns:list' %}"><i class="fas fa-users"></i> All Interns</a>
+  </li>
+  <li class="nav-item">
     <a class="nav-link" href="{% url 'attendance:list' %}"><i class="fas fa-calendar-check"></i> Attendance</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" href="{% url 'evaluations:assessment_list' %}"><i class="fas fa-star"></i> Assessments</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="#"><i class="fas fa-users"></i> Interns</a>
+    <a class="nav-link" href="{% url 'absenteeism:request_list' %}"><i class="fas fa-calendar-times"></i> Absences</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Analytics</a>

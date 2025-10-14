@@ -87,9 +87,14 @@ def self_assessment(request, assessment_id):
 @supervisor_or_above
 def assessment_list(request):
     """Supervisor/Manager views all assessments they can access."""
+    from apps.accounts.models import User
+
     # Role-based filtering
-    if request.user.role in ["manager", "admin"]:
-        # Managers/admins see all assessments
+    if request.user.is_superuser or request.user.role in [
+        User.Roles.MANAGER,
+        User.Roles.ADMIN,
+    ]:
+        # Superusers/Managers/admins see all assessments
         all_assessments = PerformanceAssessment.objects.all()
         my_interns = InternProfile.objects.all()
     else:
@@ -137,10 +142,15 @@ def assessment_list(request):
 @supervisor_or_above
 def create_assessment(request, intern_id):
     """Create a new assessment for an intern"""
+    from apps.accounts.models import User
+
     intern_profile = get_object_or_404(InternProfile, id=intern_id)
 
     # Check permission
-    if request.user.role not in ["manager", "admin"]:
+    if not request.user.is_superuser and request.user.role not in [
+        User.Roles.MANAGER,
+        User.Roles.ADMIN,
+    ]:
         try:
             employee_profile = EmployeeProfile.objects.get(user=request.user)
             if intern_profile not in employee_profile.assigned_interns.all():
@@ -201,10 +211,15 @@ def create_assessment(request, intern_id):
 @supervisor_or_above
 def assess_intern(request, assessment_id):
     """View for supervisor to assess an intern"""
+    from apps.accounts.models import User
+
     assessment = get_object_or_404(PerformanceAssessment, id=assessment_id)
 
     # Check permission
-    if request.user.role not in ["manager", "admin"]:
+    if not request.user.is_superuser and request.user.role not in [
+        User.Roles.MANAGER,
+        User.Roles.ADMIN,
+    ]:
         try:
             employee_profile = EmployeeProfile.objects.get(user=request.user)
             if assessment.intern not in employee_profile.assigned_interns.all():
@@ -236,22 +251,27 @@ def assess_intern(request, assessment_id):
 @login_required
 def view_assessment(request, assessment_id):
     """View detailed assessment with both perspectives."""
+    from apps.accounts.models import User
+
     assessment = get_object_or_404(PerformanceAssessment, id=assessment_id)
 
     # Permission check and determine if user can assess
     can_assess = False
-    if request.user.role == "intern":
+    if request.user.role == User.Roles.INTERN:
         # Interns can only view their own
         if assessment.intern.user != request.user:
             return HttpResponseForbidden("You cannot view this assessment.")
-    elif request.user.role == "supervisor":
+    elif request.user.role == User.Roles.SUPERVISOR:
         # Supervisors can only view their interns
         employee_profile = get_object_or_404(EmployeeProfile, user=request.user)
         if assessment.assessed_by != employee_profile:
             return HttpResponseForbidden("You cannot view this assessment.")
         can_assess = True
-    elif request.user.role in ["manager", "admin"]:
-        # Managers and admins can view all
+    elif request.user.is_superuser or request.user.role in [
+        User.Roles.MANAGER,
+        User.Roles.ADMIN,
+    ]:
+        # Superusers/Managers and admins can view all
         can_assess = True
 
     return render(

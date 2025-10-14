@@ -1,0 +1,353 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}{{ intern.user.get_full_name }} - Intern History - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <a href="{% url 'interns:list' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Intern List
+    </a>
+  </div>
+</div>
+
+<!-- Intern Profile Card -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar bg-primary text-white rounded-circle mx-auto mb-3" 
+             style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+          <strong>{{ intern.user.first_name.0 }}{{ intern.user.last_name.0 }}</strong>
+        </div>
+        <h4>{{ intern.user.get_full_name }}</h4>
+        <p class="text-muted mb-2">{{ intern.user.email }}</p>
+        
+        {% if is_active %}
+          <span class="badge bg-success">Active Intern</span>
+        {% elif is_completed %}
+          <span class="badge bg-secondary">Completed</span>
+        {% elif is_upcoming %}
+          <span class="badge bg-info">Upcoming</span>
+        {% endif %}
+        
+        <hr>
+        
+        <div class="text-start">
+          <p class="mb-2"><strong><i class="fas fa-school"></i> School:</strong><br>{{ intern.school.name }}</p>
+          <p class="mb-2"><strong><i class="fas fa-building"></i> Branch:</strong><br>{{ intern.branch.name }}</p>
+          <p class="mb-2"><strong><i class="fas fa-user-tie"></i> Supervisor:</strong><br>
+            {% if intern.internal_supervisor %}
+              {{ intern.internal_supervisor.user.get_full_name }}
+            {% else %}
+              Not assigned
+            {% endif %}
+          </p>
+          <p class="mb-2"><strong><i class="fas fa-calendar"></i> Period:</strong><br>
+            {{ intern.start_date|date:"M d, Y" }}<br>
+            to {{ intern.end_date|date:"M d, Y" }}
+          </p>
+          {% if total_days %}
+            <p class="mb-2"><strong><i class="fas fa-clock"></i> Duration:</strong><br>{{ total_days }} days</p>
+          {% endif %}
+          {% if days_completed %}
+            <p class="mb-2"><strong><i class="fas fa-hourglass-half"></i> Progress:</strong><br>
+              {{ days_completed }} days completed<br>
+              {{ days_remaining }} days remaining
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-8">
+    <!-- Performance Summary -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <div class="card border-primary">
+          <div class="card-body text-center">
+            <i class="fas fa-star fa-2x text-primary mb-2"></i>
+            <h3 class="mb-0">
+              {% if avg_supervisor_score %}
+                {{ avg_supervisor_score|floatformat:1 }}
+              {% else %}
+                -
+              {% endif %}
+            </h3>
+            <small class="text-muted">Average Supervisor Score</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-success">
+          <div class="card-body text-center">
+            <i class="fas fa-percentage fa-2x text-success mb-2"></i>
+            <h3 class="mb-0">{{ attendance_rate|floatformat:0 }}%</h3>
+            <small class="text-muted">Attendance Rate</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-info">
+          <div class="card-body text-center">
+            <i class="fas fa-clipboard-list fa-2x text-info mb-2"></i>
+            <h3 class="mb-0">{{ total_assessments }}</h3>
+            <small class="text-muted">Total Assessments</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Performance Overview</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6><i class="fas fa-calendar-check text-success"></i> Attendance</h6>
+            <ul class="list-unstyled">
+              <li><strong>Total:</strong> {{ total_attendance }}</li>
+              <li><strong>Approved:</strong> <span class="text-success">{{ approved_attendance }}</span></li>
+              <li><strong>Pending:</strong> <span class="text-warning">{{ pending_attendance }}</span></li>
+              <li><strong>Rejected:</strong> <span class="text-danger">{{ rejected_attendance }}</span></li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-calendar-times text-warning"></i> Absences</h6>
+            <ul class="list-unstyled">
+              <li><strong>Total Requests:</strong> {{ total_absences }}</li>
+              <li><strong>Approved:</strong> <span class="text-success">{{ approved_absences }}</span></li>
+              <li><strong>Pending:</strong> <span class="text-warning">{{ pending_absences }}</span></li>
+              <li><strong>Rejected:</strong> <span class="text-danger">{{ rejected_absences }}</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Assessments History -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-star"></i> Assessment History</h5>
+        <span class="badge bg-primary">{{ total_assessments }} Total</span>
+      </div>
+      <div class="card-body">
+        {% if assessments %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Type</th>
+                  <th>Supervisor Score</th>
+                  <th>Self Score</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for assessment in assessments %}
+                  <tr>
+                    <td><strong>Week {{ assessment.week_number }}</strong></td>
+                    <td>{{ assessment.get_assessment_type_display }}</td>
+                    <td>
+                      {% if assessment.supervisor_score %}
+                        <span class="badge {% if assessment.supervisor_score >= 80 %}bg-success{% elif assessment.supervisor_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                          {{ assessment.supervisor_score }}
+                        </span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if assessment.self_assessment_score %}
+                        {{ assessment.self_assessment_score }}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if assessment.status == 'reviewed' %}
+                        <span class="badge bg-success">Reviewed</span>
+                      {% elif assessment.status == 'submitted' %}
+                        <span class="badge bg-warning">Submitted</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Draft</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ assessment.created_at|date:"M d, Y" }}</td>
+                    <td>
+                      <a href="{% url 'evaluations:view_assessment' assessment.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if total_assessments > 10 %}
+            <div class="text-center mt-3">
+              <a href="{% url 'evaluations:assessment_list' %}?intern={{ intern.id }}" class="btn btn-primary">
+                <i class="fas fa-list"></i> View All {{ total_assessments }} Assessments
+              </a>
+            </div>
+          {% endif %}
+        {% else %}
+          <p class="text-muted text-center py-3">No assessments yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Attendance History -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Recent Attendance</h5>
+        <span class="badge bg-success">{{ approved_attendance }}/{{ total_attendance }} Approved</span>
+      </div>
+      <div class="card-body">
+        {% if attendance_records %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Branch</th>
+                  <th>Status</th>
+                  <th>Approved By</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for attendance in attendance_records %}
+                  <tr>
+                    <td>{{ attendance.check_in_time|date:"M d, Y" }}</td>
+                    <td>{{ attendance.check_in_time|time:"H:i" }}</td>
+                    <td>
+                      {% if attendance.check_out_time %}
+                        {{ attendance.check_out_time|time:"H:i" }}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ attendance.branch.name }}</td>
+                    <td>
+                      {% if attendance.approval_status == 'approved' %}
+                        <span class="badge bg-success">Approved</span>
+                      {% elif attendance.approval_status == 'pending' %}
+                        <span class="badge bg-warning">Pending</span>
+                      {% else %}
+                        <span class="badge bg-danger">Rejected</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if attendance.approved_by %}
+                        {{ attendance.approved_by.get_full_name }}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if total_attendance > 10 %}
+            <div class="text-center mt-3">
+              <a href="{% url 'attendance:list' %}?intern={{ intern.user.get_full_name }}" class="btn btn-primary">
+                <i class="fas fa-list"></i> View All {{ total_attendance }} Records
+              </a>
+            </div>
+          {% endif %}
+        {% else %}
+          <p class="text-muted text-center py-3">No attendance records yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Absence History -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-calendar-times"></i> Absence Requests</h5>
+        <span class="badge bg-info">{{ total_absences }} Total</span>
+      </div>
+      <div class="card-body">
+        {% if absence_requests %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Approved By</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for absence in absence_requests %}
+                  <tr>
+                    <td>{{ absence.start_date|date:"M d, Y" }}</td>
+                    <td>{{ absence.end_date|date:"M d, Y" }}</td>
+                    <td>{{ absence.reason|truncatewords:10 }}</td>
+                    <td>
+                      {% if absence.status == 'approved' %}
+                        <span class="badge bg-success">Approved</span>
+                      {% elif absence.status == 'pending' %}
+                        <span class="badge bg-warning">Pending</span>
+                      {% elif absence.status == 'rejected' %}
+                        <span class="badge bg-danger">Rejected</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Cancelled</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if absence.approver %}
+                        {{ absence.approver.get_full_name }}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <a href="{% url 'absenteeism:view' absence.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if total_absences > 10 %}
+            <div class="text-center mt-3">
+              <a href="{% url 'absenteeism:request_list' %}?intern={{ intern.id }}" class="btn btn-primary">
+                <i class="fas fa-list"></i> View All {{ total_absences }} Requests
+              </a>
+            </div>
+          {% endif %}
+        {% else %}
+          <p class="text-muted text-center py-3">No absence requests yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -26,6 +26,10 @@ def role_required(*roles):
                 messages.warning(request, "Please log in to access this page.")
                 return redirect("accounts:login")
 
+            # Superusers have access to everything
+            if request.user.is_superuser:
+                return view_func(request, *args, **kwargs)
+
             if request.user.role not in roles:
                 messages.error(
                     request, "You don't have permission to access this page."

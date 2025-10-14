@@ -11,6 +11,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("apps.accounts.urls")),
     path("dashboards/", include("apps.dashboards.urls")),  # Role-specific dashboards
+    path("interns/", include("apps.interns.urls")),
     path("attendance/", include("apps.attendance.urls")),
     path("evaluations/", include("apps.evaluations.urls")),
     path("absenteeism/", include("apps.absenteeism.urls")),

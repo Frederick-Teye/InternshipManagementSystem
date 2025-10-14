@@ -1,0 +1,175 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}All Interns - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="fas fa-users"></i> All Interns</h2>
+      <span class="badge bg-primary fs-5">{{ total_count }} Total</span>
+    </div>
+  </div>
+</div>
+
+<!-- Filter and Search Section -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Search & Filter</h5>
+      </div>
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-4">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" name="search" id="search" class="form-control" 
+                   placeholder="Name, email, school, or branch" value="{{ search_query }}">
+          </div>
+          <div class="col-md-2">
+            <label for="status" class="form-label">Status</label>
+            <select name="status" id="status" class="form-select">
+              <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+              <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+              <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="branch" class="form-label">Branch</label>
+            <select name="branch" id="branch" class="form-select">
+              <option value="">All Branches</option>
+              {% for branch in branches %}
+                <option value="{{ branch.id }}" {% if branch_filter == branch.id|stringformat:"s" %}selected{% endif %}>
+                  {{ branch.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="school" class="form-label">School</label>
+            <select name="school" id="school" class="form-select">
+              <option value="">All Schools</option>
+              {% for school in schools %}
+                <option value="{{ school.id }}" {% if school_filter == school.id|stringformat:"s" %}selected{% endif %}>
+                  {{ school.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label d-block">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-search"></i> Search
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Interns Table -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        {% if interns %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Intern</th>
+                  <th>School</th>
+                  <th>Branch</th>
+                  <th>Supervisor</th>
+                  <th>Period</th>
+                  <th>Assessments</th>
+                  <th>Avg Score</th>
+                  <th>Attendance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for intern in interns %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle me-2" 
+                             style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                          <strong>{{ intern.user.first_name.0 }}{{ intern.user.last_name.0 }}</strong>
+                        </div>
+                        <div>
+                          <strong>{{ intern.user.get_full_name }}</strong><br>
+                          <small class="text-muted">{{ intern.user.email }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ intern.school.name }}</td>
+                    <td>{{ intern.branch.name }}</td>
+                    <td>
+                      {% if intern.internal_supervisor %}
+                        {{ intern.internal_supervisor.user.get_full_name }}<br>
+                        <small class="text-muted">{{ intern.internal_supervisor.user.email }}</small>
+                      {% else %}
+                        <span class="text-muted">Not assigned</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <small>
+                        {{ intern.start_date|date:"M d, Y" }}<br>
+                        to {{ intern.end_date|date:"M d, Y" }}
+                      </small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-info">{{ intern.total_assessments }}</span>
+                    </td>
+                    <td class="text-center">
+                      {% if intern.avg_score %}
+                        {% if intern.avg_score >= 80 %}
+                          <span class="badge bg-success">{{ intern.avg_score|floatformat:1 }}</span>
+                        {% elif intern.avg_score >= 60 %}
+                          <span class="badge bg-warning">{{ intern.avg_score|floatformat:1 }}</span>
+                        {% else %}
+                          <span class="badge bg-danger">{{ intern.avg_score|floatformat:1 }}</span>
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <small>{{ intern.approved_attendance }}/{{ intern.total_attendance }}</small>
+                    </td>
+                    <td>
+                      <a href="{% url 'interns:detail' intern.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye"></i> View History
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No Interns Found</h5>
+            <p class="text-muted">
+              {% if search_query or status_filter != 'all' or branch_filter or school_filter %}
+                Try adjusting your filters to see more results.
+              {% else %}
+                No interns have been registered yet.
+              {% endif %}
+            </p>
+            {% if search_query or status_filter != 'all' or branch_filter or school_filter %}
+              <a href="{% url 'interns:list' %}" class="btn btn-primary">
+                <i class="fas fa-redo"></i> Clear Filters
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
