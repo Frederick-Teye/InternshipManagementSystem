@@ -63,7 +63,7 @@ class LoginView(TemplateView):
 def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out successfully.")
-    return redirect("login")
+    return redirect("accounts:login")
 
 
 class OnboardingView(TemplateView):
