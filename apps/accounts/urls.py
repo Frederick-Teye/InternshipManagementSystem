@@ -11,6 +11,8 @@ from apps.accounts.views import (
     OnboardingView,
     dashboard_view,
     logout_view,
+    profile_view,
+    change_password_view,
 )
 
 app_name = "accounts"
@@ -20,6 +22,9 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("onboarding/<uuid:token>/", OnboardingView.as_view(), name="onboarding"),
     path("dashboard/", dashboard_view, name="dashboard"),
+    # Profile management
+    path("profile/", profile_view, name="profile"),
+    path("change-password/", change_password_view, name="change_password"),
     # Password reset
     path("password-reset/", CustomPasswordResetView.as_view(), name="password_reset"),
     path(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import (
     PasswordResetView,
@@ -19,6 +19,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import TemplateView
 
 from apps.accounts.models import User
+from apps.accounts.forms import UserProfileForm, CustomPasswordChangeForm
 
 
 class LoginView(TemplateView):
@@ -175,3 +176,42 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = "accounts/password_reset_complete.html"
+
+
+@login_required
+def profile_view(request):
+    """View for users to edit their profile"""
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully.")
+            return redirect("accounts:profile")
+    else:
+        form = UserProfileForm(instance=request.user)
+
+    context = {
+        "form": form,
+        "user": request.user,
+    }
+    return render(request, "accounts/profile.html", context)
+
+
+@login_required
+def change_password_view(request):
+    """View for users to change their password"""
+    if request.method == "POST":
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Important: Update the session so the user doesn't get logged out
+            update_session_auth_hash(request, user)
+            messages.success(request, "Your password has been changed successfully.")
+            return redirect("accounts:profile")
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+
+    context = {
+        "form": form,
+    }
+    return render(request, "accounts/change_password.html", context)
