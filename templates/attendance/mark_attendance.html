@@ -39,6 +39,23 @@
 
         <form method="post" id="attendance-form" style="display: none;">
           {% csrf_token %}
+          
+          {% if form.errors %}
+            <div class="alert alert-danger">
+              <strong>Error:</strong>
+              <ul class="mb-0">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          
           {{ form.latitude }}
           {{ form.longitude }}
           {{ form.location_accuracy_m }}
@@ -118,8 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('id_location_accuracy_m').value = accuracy;
 
                 // Display location info
-                document.getElementById('display-lat').textContent = lat.toFixed(6);
-                document.getElementById('display-lon').textContent = lon.toFixed(6);
+                document.getElementById('display-lat').textContent = lat.toFixed(9);
+                document.getElementById('display-lon').textContent = lon.toFixed(9);
                 document.getElementById('display-accuracy').textContent = accuracy.toFixed(1);
 
                 // Calculate and display distance

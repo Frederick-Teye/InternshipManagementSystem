@@ -6,7 +6,9 @@ from django.db import models
 from django.utils import timezone
 
 
-def haversine_distance_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+def haversine_distance_meters(
+    lat1: float, lon1: float, lat2: float, lon2: float
+) -> float:
     """Return distance in meters between two geographic points."""
 
     radius = 6371000  # Earth radius in meters
@@ -15,7 +17,10 @@ def haversine_distance_meters(lat1: float, lon1: float, lat2: float, lon2: float
     delta_phi = math.radians(lat2 - lat1)
     delta_lambda = math.radians(lon2 - lon1)
 
-    a = math.sin(delta_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+    a = (
+        math.sin(delta_phi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+    )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return radius * c
 
@@ -26,14 +31,22 @@ class Attendance(models.Model):
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
 
-    intern = models.ForeignKey("interns.InternProfile", on_delete=models.CASCADE, related_name="attendances")
-    branch = models.ForeignKey("branches.Branch", on_delete=models.CASCADE, related_name="attendances")
+    intern = models.ForeignKey(
+        "interns.InternProfile", on_delete=models.CASCADE, related_name="attendances"
+    )
+    branch = models.ForeignKey(
+        "branches.Branch", on_delete=models.CASCADE, related_name="attendances"
+    )
     check_in_time = models.DateTimeField(default=timezone.now)
     check_out_time = models.DateTimeField(null=True, blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    location_accuracy_m = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    approval_status = models.CharField(max_length=32, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
+    latitude = models.DecimalField(max_digits=12, decimal_places=9)
+    longitude = models.DecimalField(max_digits=12, decimal_places=9)
+    location_accuracy_m = models.DecimalField(
+        max_digits=12, decimal_places=9, null=True, blank=True
+    )
+    approval_status = models.CharField(
+        max_length=32, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING
+    )
     auto_approved = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
     recorded_by = models.ForeignKey(

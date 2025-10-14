@@ -11,8 +11,12 @@ class Branch(models.Model):
     city = models.CharField(max_length=128, blank=True)
     state = models.CharField(max_length=128, blank=True)
     country = models.CharField(max_length=128, blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.DecimalField(
+        max_digits=12, decimal_places=9, null=True, blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=12, decimal_places=9, null=True, blank=True
+    )
     proximity_threshold_meters = models.PositiveIntegerField(
         default=150,
         help_text="Maximum distance from branch location to auto-approve attendance.",
@@ -33,7 +37,9 @@ class BranchEmployeeAssignment(models.Model):
         MANAGER = "manager", "Manager"
         COORDINATOR = "coordinator", "Coordinator"
 
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="assignments")
+    branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, related_name="assignments"
+    )
     employee = models.ForeignKey(
         "supervisors.EmployeeProfile",
         on_delete=models.CASCADE,

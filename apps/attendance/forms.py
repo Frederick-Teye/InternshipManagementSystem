@@ -11,20 +11,20 @@ class AttendanceMarkForm(forms.ModelForm):
     """Form for marking attendance with GPS coordinates"""
 
     latitude = forms.DecimalField(
-        max_digits=9,
-        decimal_places=6,
+        max_digits=12,
+        decimal_places=9,
         widget=forms.HiddenInput(),
         required=True,
     )
     longitude = forms.DecimalField(
-        max_digits=9,
-        decimal_places=6,
+        max_digits=12,
+        decimal_places=9,
         widget=forms.HiddenInput(),
         required=True,
     )
     location_accuracy_m = forms.DecimalField(
-        max_digits=6,
-        decimal_places=2,
+        max_digits=12,
+        decimal_places=9,
         widget=forms.HiddenInput(),
         required=False,
     )
