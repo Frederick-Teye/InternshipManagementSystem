@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from apps.accounts.decorators import intern_required, supervisor_or_above
+from apps.notifications.services import NotificationService
 from apps.evaluations.forms import (
     CreateAssessmentForm,
     InternSelfAssessmentForm,
@@ -184,6 +185,10 @@ def create_assessment(request, intern_id):
                     request,
                     f"✓ Assessment created for {intern_profile.user.get_full_name()}",
                 )
+                # Send notification to intern
+                NotificationService.notify_assessment_created(
+                    assessment=assessment, creator=request.user
+                )
                 return redirect(
                     "evaluations:assess_intern", assessment_id=assessment.id
                 )
@@ -232,10 +237,14 @@ def assess_intern(request, assessment_id):
     if request.method == "POST":
         form = SupervisorAssessmentForm(request.POST, instance=assessment)
         if form.is_valid():
-            form.save()
+            updated_assessment = form.save()
             messages.success(
                 request,
                 f"✓ Assessment completed for {assessment.intern.user.get_full_name()}",
+            )
+            # Send notification to intern
+            NotificationService.notify_assessment_reviewed(
+                assessment=updated_assessment, reviewer=request.user
             )
             return redirect("evaluations:assessment_list")
     else:

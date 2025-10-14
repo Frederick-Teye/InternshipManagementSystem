@@ -1,0 +1,130 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}Notifications - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <h2><i class="fas fa-bell"></i> Notification Center</h2>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-3">
+            <label for="filter" class="form-label">Status</label>
+            <select name="filter" id="filter" class="form-select" onchange="this.form.submit()">
+              <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All Notifications</option>
+              <option value="unread" {% if filter_type == 'unread' %}selected{% endif %}>Unread Only</option>
+              <option value="read" {% if filter_type == 'read' %}selected{% endif %}>Read Only</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="category" class="form-label">Category</label>
+            <select name="category" id="category" class="form-select" onchange="this.form.submit()">
+              <option value="">All Categories</option>
+              <option value="attendance" {% if category == 'attendance' %}selected{% endif %}>Attendance</option>
+              <option value="assessment" {% if category == 'assessment' %}selected{% endif %}>Assessments</option>
+              <option value="absenteeism" {% if category == 'absenteeism' %}selected{% endif %}>Absences</option>
+              <option value="onboarding" {% if category == 'onboarding' %}selected{% endif %}>Onboarding</option>
+              <option value="system" {% if category == 'system' %}selected{% endif %}>System</option>
+              <option value="general" {% if category == 'general' %}selected{% endif %}>General</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <a href="{% url 'notifications:center' %}" class="btn btn-secondary">
+              <i class="fas fa-redo"></i> Clear Filters
+            </a>
+          </div>
+          <div class="col-md-3 d-flex align-items-end justify-content-end">
+            {% if unread_count > 0 %}
+              <form method="post" action="{% url 'notifications:mark_all_read' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-check-double"></i> Mark All as Read ({{ unread_count }})
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications List -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        {% if notifications %}
+          <div class="list-group">
+            {% for notification in notifications %}
+              <a href="{% url 'notifications:mark_read' notification.id %}" 
+                 class="list-group-item list-group-item-action {% if not notification.is_read %}list-group-item-light border-start border-primary border-4{% endif %}">
+                <div class="d-flex w-100 justify-content-between">
+                  <div class="d-flex align-items-start">
+                    <div class="me-3">
+                      {% if notification.notification_type == 'success' %}
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                      {% elif notification.notification_type == 'warning' %}
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                      {% elif notification.notification_type == 'error' %}
+                        <i class="fas fa-times-circle fa-2x text-danger"></i>
+                      {% else %}
+                        <i class="fas fa-info-circle fa-2x text-info"></i>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <h5 class="mb-1">
+                        {{ notification.title }}
+                        {% if not notification.is_read %}
+                          <span class="badge bg-primary">New</span>
+                        {% endif %}
+                      </h5>
+                      <p class="mb-1">{{ notification.message }}</p>
+                      <small class="text-muted">
+                        <i class="fas fa-tag"></i> {{ notification.get_category_display }}
+                        <i class="fas fa-clock ms-2"></i> {{ notification.created_at|timesince }} ago
+                        {% if notification.is_read %}
+                          <i class="fas fa-check-double ms-2"></i> Read {{ notification.read_at|timesince }} ago
+                        {% endif %}
+                      </small>
+                    </div>
+                  </div>
+                  <div>
+                    {% if notification.action_url %}
+                      <i class="fas fa-arrow-right"></i>
+                    {% endif %}
+                  </div>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No Notifications Found</h5>
+            <p class="text-muted">
+              {% if filter_type != 'all' or category %}
+                Try adjusting your filters to see more results.
+              {% else %}
+                You don't have any notifications yet.
+              {% endif %}
+            </p>
+            {% if filter_type != 'all' or category %}
+              <a href="{% url 'notifications:center' %}" class="btn btn-primary">
+                <i class="fas fa-redo"></i> Clear Filters
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

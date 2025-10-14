@@ -1,0 +1,160 @@
+{% extends "dashboards/base.html" %}
+
+{% block title %}Notification Settings - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <h2><i class="fas fa-cog"></i> Notification Settings</h2>
+    <p class="text-muted">Manage how you receive notifications from the system.</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8 offset-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          
+          <!-- In-App Notifications -->
+          <div class="mb-4">
+            <h5 class="mb-3"><i class="fas fa-bell"></i> In-App Notifications</h5>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" 
+                     id="in_app_notifications" name="in_app_notifications" 
+                     {% if preferences.in_app_notifications %}checked{% endif %}>
+              <label class="form-check-label" for="in_app_notifications">
+                <strong>Enable in-app notifications</strong>
+                <br>
+                <small class="text-muted">Show notification badge and dropdown in the navigation bar</small>
+              </label>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Email Notifications -->
+          <div class="mb-4">
+            <h5 class="mb-3"><i class="fas fa-envelope"></i> Email Notifications</h5>
+            
+            <div class="alert alert-info mb-3">
+              <i class="fas fa-info-circle"></i> 
+              Configure which types of notifications you want to receive via email at <strong>{{ user.email }}</strong>
+            </div>
+
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" 
+                     id="email_on_attendance_approval" name="email_on_attendance_approval" 
+                     {% if preferences.email_on_attendance_approval %}checked{% endif %}>
+              <label class="form-check-label" for="email_on_attendance_approval">
+                <strong>Attendance notifications</strong>
+                <br>
+                <small class="text-muted">When attendance is approved or rejected</small>
+              </label>
+            </div>
+
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" 
+                     id="email_on_assessment_created" name="email_on_assessment_created" 
+                     {% if preferences.email_on_assessment_created %}checked{% endif %}>
+              <label class="form-check-label" for="email_on_assessment_created">
+                <strong>New assessment notifications</strong>
+                <br>
+                <small class="text-muted">When a new assessment is created for you</small>
+              </label>
+            </div>
+
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" 
+                     id="email_on_assessment_reviewed" name="email_on_assessment_reviewed" 
+                     {% if preferences.email_on_assessment_reviewed %}checked{% endif %}>
+              <label class="form-check-label" for="email_on_assessment_reviewed">
+                <strong>Assessment review notifications</strong>
+                <br>
+                <small class="text-muted">When your assessment is reviewed by supervisor</small>
+              </label>
+            </div>
+
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" 
+                     id="email_on_absence_status" name="email_on_absence_status" 
+                     {% if preferences.email_on_absence_status %}checked{% endif %}>
+              <label class="form-check-label" for="email_on_absence_status">
+                <strong>Absence status notifications</strong>
+                <br>
+                <small class="text-muted">When your absence request is approved or rejected</small>
+              </label>
+            </div>
+
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" 
+                     id="email_on_onboarding" name="email_on_onboarding" 
+                     {% if preferences.email_on_onboarding %}checked{% endif %}>
+              <label class="form-check-label" for="email_on_onboarding">
+                <strong>Onboarding notifications</strong>
+                <br>
+                <small class="text-muted">Onboarding status updates and task reminders</small>
+              </label>
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+              <label class="form-label"><strong><i class="fas fa-clock"></i> Email Digest Options</strong></label>
+              <p class="text-muted small">Instead of individual emails, receive a summary digest</p>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" 
+                       name="daily_digest" id="daily_digest" 
+                       {% if preferences.daily_digest %}checked{% endif %}>
+                <label class="form-check-label" for="daily_digest">
+                  <strong>Daily digest</strong> - Receive one summary email per day
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" 
+                       name="weekly_digest" id="weekly_digest" 
+                       {% if preferences.weekly_digest %}checked{% endif %}>
+                <label class="form-check-label" for="weekly_digest">
+                  <strong>Weekly digest</strong> - Receive one summary email per week
+                </label>
+              </div>
+              <small class="text-muted">Note: Digest options work alongside individual email preferences</small>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Quick Actions -->
+          <div class="mb-3">
+            <h5 class="mb-3"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            <div class="d-grid gap-2">
+              <a href="{% url 'notifications:mark_all_read' %}" 
+                 onclick="return confirm('Mark all notifications as read?')"
+                 class="btn btn-outline-primary">
+                <i class="fas fa-check-double"></i> Mark All Notifications as Read
+              </a>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Submit Buttons -->
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'notifications:center' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Back to Notifications
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Save Preferences
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}

@@ -11,7 +11,7 @@
     <a class="nav-link" href="{% url 'absenteeism:my_requests' %}"><i class="fas fa-calendar-times"></i> Absences</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="#"><i class="fas fa-file-alt"></i> Reports</a>
+    <a class="nav-link" href="{% url 'reports:download_intern_report' intern_profile.id %}"><i class="fas fa-file-alt"></i> Reports</a>
   </li>
 {% endblock %}
 
@@ -59,7 +59,7 @@
             </a>
           </div>
           <div class="col-md-6">
-            <a href="#" class="quick-action-btn">
+            <a href="{% url 'reports:download_intern_report' intern_profile.id %}" class="quick-action-btn">
               <i class="fas fa-file-pdf text-warning"></i>
               <span>Download Report</span>
             </a>

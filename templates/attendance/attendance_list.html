@@ -7,9 +7,14 @@
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2><i class="fas fa-list-alt"></i> Attendance Reports</h2>
-      <a href="{% url 'attendance:pending_approvals' %}" class="btn btn-warning">
-        <i class="fas fa-clock"></i> Pending Approvals
-      </a>
+      <div>
+        <a href="{% url 'reports:export_attendance' %}?{{ request.GET.urlencode }}" class="btn btn-success me-2">
+          <i class="fas fa-file-csv"></i> Export to CSV
+        </a>
+        <a href="{% url 'attendance:pending_approvals' %}" class="btn btn-warning">
+          <i class="fas fa-clock"></i> Pending Approvals
+        </a>
+      </div>
     </div>
   </div>
 </div>

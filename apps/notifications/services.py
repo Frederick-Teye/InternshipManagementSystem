@@ -240,8 +240,117 @@ class NotificationService:
             Notification.objects.filter(recipient=user).order_by("-created_at")[:limit]
         )
 
+    # Convenience methods for specific notification types
 
-# Convenience functions for specific notification types
+    @staticmethod
+    def notify_attendance_approved(attendance, approver):
+        """Notify intern that their attendance was approved"""
+        NotificationService.create_notification(
+            recipient=attendance.intern.user,
+            title="Attendance Approved ✓",
+            message=f"Your attendance for {attendance.check_in_time.strftime('%B %d, %Y')} has been approved by {approver.get_full_name()}.",
+            notification_type="success",
+            category="attendance",
+            action_url=reverse("attendance:my_attendance"),
+            related_object=attendance,
+            send_email=True,
+        )
+
+    @staticmethod
+    def notify_attendance_rejected(attendance, approver, reason=""):
+        """Notify intern that their attendance was rejected"""
+        message = f"Your attendance for {attendance.check_in_time.strftime('%B %d, %Y')} was rejected by {approver.get_full_name()}."
+        if reason:
+            message += f" Reason: {reason}"
+
+        NotificationService.create_notification(
+            recipient=attendance.intern.user,
+            title="Attendance Rejected",
+            message=message,
+            notification_type="error",
+            category="attendance",
+            action_url=reverse("attendance:my_attendance"),
+            related_object=attendance,
+            send_email=True,
+        )
+
+    @staticmethod
+    def notify_assessment_created(assessment, creator):
+        """Notify intern that a new assessment was created"""
+        NotificationService.create_notification(
+            recipient=assessment.intern.user,
+            title="New Assessment Available",
+            message=f"Week {assessment.week_number} assessment has been created by {creator.get_full_name()}. Please complete your self-assessment.",
+            notification_type="info",
+            category="assessment",
+            action_url=reverse("evaluations:view_assessment", args=[assessment.id]),
+            related_object=assessment,
+            send_email=True,
+        )
+
+    @staticmethod
+    def notify_assessment_reviewed(assessment, reviewer):
+        """Notify intern that their assessment was reviewed"""
+        NotificationService.create_notification(
+            recipient=assessment.intern.user,
+            title="Assessment Reviewed",
+            message=f"Your Week {assessment.week_number} assessment has been reviewed by {reviewer.get_full_name()}.",
+            notification_type="success",
+            category="assessment",
+            action_url=reverse("evaluations:view_assessment", args=[assessment.id]),
+            related_object=assessment,
+            send_email=True,
+        )
+
+    @staticmethod
+    def notify_absence_approved(absence_request, approver):
+        """Notify intern that their absence request was approved"""
+        NotificationService.create_notification(
+            recipient=absence_request.intern.user,
+            title="Absence Request Approved ✓",
+            message=f"Your absence request for {absence_request.start_date} to {absence_request.end_date} has been approved by {approver.get_full_name()}.",
+            notification_type="success",
+            category="absenteeism",
+            action_url=reverse("absenteeism:my_requests"),
+            related_object=absence_request,
+            send_email=True,
+        )
+
+    @staticmethod
+    def notify_absence_rejected(absence_request, approver, reason=""):
+        """Notify intern that their absence request was rejected"""
+        message = f"Your absence request for {absence_request.start_date} to {absence_request.end_date} was rejected by {approver.get_full_name()}."
+        if reason:
+            message += f" Reason: {reason}"
+
+        NotificationService.create_notification(
+            recipient=absence_request.intern.user,
+            title="Absence Request Rejected",
+            message=message,
+            notification_type="error",
+            category="absenteeism",
+            action_url=reverse("absenteeism:my_requests"),
+            related_object=absence_request,
+            send_email=True,
+        )
+
+    @staticmethod
+    def notify_supervisor_new_absence_request(absence_request):
+        """Notify supervisor of new absence request from intern"""
+        if absence_request.intern.internal_supervisor:
+            NotificationService.create_notification(
+                recipient=absence_request.intern.internal_supervisor.user,
+                title="New Absence Request Pending Approval",
+                message=f"{absence_request.intern.user.get_full_name()} submitted an absence request for {absence_request.start_date} to {absence_request.end_date}. Reason: {absence_request.reason}",
+                notification_type="info",
+                category="absenteeism",
+                action_url=reverse("absenteeism:pending_requests"),
+                related_object=absence_request,
+                send_email=True,  # Email supervisors about new absence requests
+            )
+
+
+# Convenience functions for specific notification types (for backward compatibility)
 
 
 def notify_attendance_approved(attendance):

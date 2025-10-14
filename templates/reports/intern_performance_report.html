@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Intern Performance Report - {{ user.get_full_name }}</title>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>INTERN PERFORMANCE REPORT</h1>
+        <div class="subtitle">{{ intern.branch.organization_name }}</div>
+        <div class="subtitle">Generated on: {{ report_date|date:"F d, Y" }}</div>
+    </div>
+
+    <!-- Intern Information -->
+    <div class="section">
+        <div class="section-title">Intern Information</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Full Name</div>
+                <div class="info-value">{{ user.get_full_name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ user.email }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Department</div>
+                <div class="info-value">{{ intern.department|default:"N/A" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Branch</div>
+                <div class="info-value">{{ intern.branch.name|default:"N/A" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Supervisor</div>
+                <div class="info-value">{% if supervisor %}{{ supervisor.user.get_full_name }}{% else %}N/A{% endif %}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">School</div>
+                <div class="info-value">{{ intern.school.name|default:"N/A" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Start Date</div>
+                <div class="info-value">{{ start_date|date:"F d, Y"|default:"N/A" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">End Date</div>
+                <div class="info-value">{{ end_date|date:"F d, Y"|default:"Ongoing" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Statistics -->
+    <div class="section">
+        <div class="section-title">Attendance Summary</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_attendance }}</div>
+                <div class="stat-label">Total Days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ approved_attendance }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rejected_attendance }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ attendance_rate }}%</div>
+                <div class="stat-label">Attendance Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Assessment Scores -->
+    <div class="section">
+        <div class="section-title">Average Performance Scores</div>
+        <div class="score-grid">
+            <div class="score-item">
+                <div>
+                    <div style="font-weight: bold;">Supervisor Score</div>
+                    <div style="font-size: 18pt; color: #0d6efd;">{{ avg_supervisor_score }}/100</div>
+                </div>
+                <div class="score-bar">
+                    <div class="score-fill" style="width: {{ avg_supervisor_score }}%;"></div>
+                </div>
+            </div>
+            
+            <div class="score-item">
+                <div>
+                    <div style="font-weight: bold;">Intern Self-Assessment</div>
+                    <div style="font-size: 18pt; color: #198754;">{{ avg_intern_score }}/100</div>
+                </div>
+                <div class="score-bar">
+                    <div class="score-fill" style="width: {{ avg_intern_score }}%; background: #198754;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 12pt; color: #666; margin-bottom: 5px;">Total Assessments</div>
+            <div style="font-size: 24pt; font-weight: bold; color: #0d6efd;">{{ completed_assessments }} of {{ total_assessments }}</div>
+            <div style="font-size: 10pt; color: #999; margin-top: 5px;">Submitted Assessments</div>
+        </div>
+    </div>
+
+    <!-- Recent Assessments -->
+    {% if assessments %}
+    <div class="section">
+        <div class="section-title">Recent Assessments</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Date</th>
+                    <th>Period</th>
+                    <th>Supervisor Score</th>
+                    <th>Intern Score</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assessment in assessments %}
+                <tr>
+                    <td>Week {{ assessment.week_number }}</td>
+                    <td>{{ assessment.assessment_date|date:"M d, Y" }}</td>
+                    <td>{{ assessment.period_start|date:"M d" }} - {{ assessment.period_end|date:"M d" }}</td>
+                    <td><strong>{{ assessment.supervisor_score|default:"-" }}/100</strong></td>
+                    <td>{{ assessment.intern_score|default:"-" }}/100</td>
+                    <td>{{ assessment.get_status_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Absence Statistics -->
+    <div class="section">
+        <div class="section-title">Absence Summary</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_absences }}</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ approved_absences }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ rejected_absences }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ approved_absence_days }}</div>
+                <div class="stat-label">Days Absent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-box">
+            <div style="font-weight: bold; margin-bottom: 10px;">Intern</div>
+            <div class="signature-line">{{ user.get_full_name }}</div>
+        </div>
+        <div class="signature-box">
+            <div style="font-weight: bold; margin-bottom: 10px;">Supervisor</div>
+            <div class="signature-line">{% if supervisor %}{{ supervisor.user.get_full_name }}{% else %}N/A{% endif %}</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This report is computer-generated and does not require a signature.</p>
+        <p>© {{ report_date|date:"Y" }} {{ intern.branch.organization_name }} - Internship Management System</p>
+    </div>
+</body>
+</html>

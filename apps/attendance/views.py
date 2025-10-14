@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from apps.accounts.decorators import intern_required, supervisor_or_above
+from apps.notifications.services import NotificationService
 from apps.attendance.forms import (
     AttendanceApprovalForm,
     AttendanceMarkForm,
@@ -225,11 +226,19 @@ def approve_attendance(request, attendance_id):
                     request,
                     f"✓ Attendance approved for {attendance.intern.user.get_full_name()}",
                 )
+                # Send notification
+                NotificationService.notify_attendance_approved(
+                    attendance=attendance, approver=request.user
+                )
             else:
                 attendance.reject(approver=request.user, note=note)
                 messages.info(
                     request,
                     f"Attendance rejected for {attendance.intern.user.get_full_name()}",
+                )
+                # Send notification
+                NotificationService.notify_attendance_rejected(
+                    attendance=attendance, approver=request.user, reason=note
                 )
 
             attendance.save()

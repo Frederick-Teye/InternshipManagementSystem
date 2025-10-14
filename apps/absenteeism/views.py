@@ -8,6 +8,7 @@ from django.utils import timezone
 from apps.absenteeism.forms import AbsenteeismApprovalForm, AbsenteeismRequestForm
 from apps.absenteeism.models import AbsenteeismRequest
 from apps.accounts.decorators import intern_required, supervisor_or_above
+from apps.notifications.services import NotificationService
 from apps.interns.models import InternProfile
 from apps.supervisors.models import EmployeeProfile
 
@@ -24,6 +25,10 @@ def request_absence(request):
             absence_request = form.save(commit=False)
             absence_request.intern = intern_profile
             absence_request.save()
+
+            # Notify supervisor of new absence request
+            NotificationService.notify_supervisor_new_absence_request(absence_request)
+
             messages.success(
                 request,
                 "Your absence request has been submitted successfully and is pending approval.",
@@ -161,12 +166,22 @@ def approve_request(request, request_id):
                     request,
                     f"Absence request for {absence_request.intern.user.get_full_name()} has been approved.",
                 )
+                # Send notification
+                NotificationService.notify_absence_approved(
+                    absence_request=absence_request, approver=request.user
+                )
             else:
                 absence_request.reject(approver=request.user, note=decision_note)
                 absence_request.save()
                 messages.warning(
                     request,
                     f"Absence request for {absence_request.intern.user.get_full_name()} has been rejected.",
+                )
+                # Send notification
+                NotificationService.notify_absence_rejected(
+                    absence_request=absence_request,
+                    approver=request.user,
+                    reason=decision_note,
                 )
 
             return redirect("absenteeism:pending_requests")
