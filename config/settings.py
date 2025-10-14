@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "apps.holidays",
     "apps.log",
     "apps.dashboards",
+    "apps.notifications",
     "crispy_forms",
     "crispy_bootstrap5",
 ]
