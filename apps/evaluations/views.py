@@ -87,9 +87,6 @@ def self_assessment(request, assessment_id):
 @supervisor_or_above
 def assessment_list(request):
     """Supervisor/Manager views all assessments they can access."""
-    # Get employee profile
-    employee_profile = get_object_or_404(EmployeeProfile, user=request.user)
-
     # Role-based filtering
     if request.user.role in ["manager", "admin"]:
         # Managers/admins see all assessments
@@ -97,6 +94,8 @@ def assessment_list(request):
         my_interns = InternProfile.objects.all()
     else:
         # Supervisors see only their interns
+        # Get employee profile for supervisors
+        employee_profile = get_object_or_404(EmployeeProfile, user=request.user)
         all_assessments = PerformanceAssessment.objects.filter(
             assessed_by=employee_profile
         )

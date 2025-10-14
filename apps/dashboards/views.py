@@ -217,8 +217,7 @@ def manager_dashboard(request):
     # Active interns (with recent attendance)
     active_interns = (
         InternProfile.objects.filter(
-            attendance_records__check_in_time__gte=timezone.now()
-            - timezone.timedelta(days=7)
+            attendances__check_in_time__gte=timezone.now() - timezone.timedelta(days=7)
         )
         .distinct()
         .count()
