@@ -22,6 +22,11 @@ def intern_list(request):
         "user", "school", "branch", "internal_supervisor__user"
     ).all()
 
+    # Role-based filtering: supervisors only see their assigned interns
+    if request.user.role == request.user.Roles.SUPERVISOR:
+        interns = interns.filter(internal_supervisor__user=request.user)
+    # Managers and admins see all interns (no additional filtering needed)
+
     # Search functionality
     search_query = request.GET.get("search", "")
     if search_query:
