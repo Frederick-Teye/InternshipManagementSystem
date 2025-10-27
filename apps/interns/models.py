@@ -5,17 +5,24 @@ from django.db import models
 from django.utils import timezone
 
 
-class InternProfile(models.Model):
-    class InternType(models.TextChoices):
-        CLINICAL = "clinical", "Clinical"
-        NURSING = "nursing", "Nursing"
-        PHARMACY = "pharmacy", "Pharmacy"
-        LABORATORY = "laboratory", "Laboratory"
-        ADMINISTRATIVE = "administrative", "Administrative"
-        OTHER = "other", "Other"
+class InternType(models.Model):
+    name = models.CharField(max_length=32, unique=True)
+    display_name = models.CharField(max_length=32)
 
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Intern Type"
+        verbose_name_plural = "Intern Types"
+
+    def __str__(self) -> str:
+        return self.display_name
+
+
+class InternProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    school = models.ForeignKey("schools.School", on_delete=models.SET_NULL, null=True, blank=True)
+    school = models.ForeignKey(
+        "schools.School", on_delete=models.SET_NULL, null=True, blank=True
+    )
     academic_supervisor = models.ForeignKey(
         "schools.AcademicSupervisor",
         on_delete=models.SET_NULL,
@@ -23,7 +30,9 @@ class InternProfile(models.Model):
         blank=True,
         help_text="Academic supervisor associated with the intern's school.",
     )
-    branch = models.ForeignKey("branches.Branch", on_delete=models.SET_NULL, null=True, blank=True)
+    branch = models.ForeignKey(
+        "branches.Branch", on_delete=models.SET_NULL, null=True, blank=True
+    )
     internal_supervisor = models.ForeignKey(
         "supervisors.EmployeeProfile",
         on_delete=models.SET_NULL,
@@ -31,9 +40,15 @@ class InternProfile(models.Model):
         blank=True,
         related_name="assigned_interns",
     )
-    intern_type = models.CharField(max_length=32, choices=InternType.choices, default=InternType.CLINICAL)
-    profile_picture = models.ImageField(upload_to="interns/profile_photos/", blank=True, null=True)
-    application_letter = models.FileField(upload_to="interns/application_letters/", blank=True, null=True)
+    intern_type = models.ForeignKey(
+        InternType, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    profile_picture = models.ImageField(
+        upload_to="interns/profile_photos/", blank=True, null=True
+    )
+    application_letter = models.FileField(
+        upload_to="interns/application_letters/", blank=True, null=True
+    )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     emergency_contact_name = models.CharField(max_length=128, blank=True)

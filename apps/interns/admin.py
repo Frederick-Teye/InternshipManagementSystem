@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from apps.interns.models import InternProfile
+from apps.interns.models import InternProfile, InternType
+
+
+@admin.register(InternType)
+class InternTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "display_name")
+    search_fields = ("name", "display_name")
 
 
 @admin.register(InternProfile)
