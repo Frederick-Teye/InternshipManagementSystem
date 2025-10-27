@@ -55,6 +55,11 @@ def intern_list(request):
     if school_filter:
         interns = interns.filter(school_id=school_filter)
 
+    # Filter by intern type
+    intern_type_filter = request.GET.get("intern_type", "")
+    if intern_type_filter:
+        interns = interns.filter(intern_type=intern_type_filter)
+
     # Annotate with statistics
     interns = interns.annotate(
         total_assessments=Count("assessments"),
@@ -78,8 +83,10 @@ def intern_list(request):
         "status_filter": status_filter,
         "branch_filter": branch_filter,
         "school_filter": school_filter,
+        "intern_type_filter": intern_type_filter,
         "branches": branches,
         "schools": schools,
+        "intern_types": InternProfile.InternType.choices,
         "total_count": interns.count(),
     }
 
