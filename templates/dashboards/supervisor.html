@@ -17,6 +17,9 @@
     <a class="nav-link" href="{% url 'absenteeism:pending_requests' %}"><i class="fas fa-calendar-times"></i> Absences</a>
   </li>
   <li class="nav-item">
+    <a class="nav-link" href="{% url 'log:supervisor_activity_log' %}"><i class="fas fa-history"></i> Activity Logs</a>
+  </li>
+  <li class="nav-item">
     <a class="nav-link" href="{% url 'interns:list' %}"><i class="fas fa-users"></i> My Interns</a>
   </li>
 {% endblock %}

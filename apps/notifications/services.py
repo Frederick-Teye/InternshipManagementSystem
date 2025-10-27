@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Optional, List
 from django.contrib.contenttypes.models import ContentType
-from django.core.mail import send_mail
+from apps.accounts.services import EmailService
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
@@ -131,41 +131,31 @@ class NotificationService:
             if not NotificationService._should_send_email(notification, preferences):
                 return False
 
-            # Prepare email
-            subject = f"[IMS] {notification.title}"
+            # Prepare email context
+            context = {
+                "notification": notification,
+                "user": notification.recipient,
+                "site_url": (
+                    settings.SITE_URL
+                    if hasattr(settings, "SITE_URL")
+                    else "http://localhost:8000"
+                ),
+            }
 
-            # Render email template
-            html_message = render_to_string(
-                "notifications/email/notification_email.html",
-                {
-                    "notification": notification,
-                    "user": notification.recipient,
-                    "site_url": (
-                        settings.SITE_URL
-                        if hasattr(settings, "SITE_URL")
-                        else "http://localhost:8000"
-                    ),
-                },
+            # Send email using EmailService
+            success = EmailService.send_notification_email(
+                recipient=notification.recipient,
+                notification=notification,
+                context=context,
             )
 
-            plain_message = notification.message
+            if success:
+                # Mark as sent
+                notification.email_sent = True
+                notification.email_sent_at = timezone.now()
+                notification.save(update_fields=["email_sent", "email_sent_at"])
 
-            # Send email
-            send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[notification.recipient.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-
-            # Mark as sent
-            notification.email_sent = True
-            notification.email_sent_at = timezone.now()
-            notification.save(update_fields=["email_sent", "email_sent_at"])
-
-            return True
+            return success
 
         except Exception as e:
             print(f"Error sending email notification: {e}")
