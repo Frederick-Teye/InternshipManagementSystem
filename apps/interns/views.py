@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from apps.accounts.decorators import supervisor_or_above
 from apps.absenteeism.models import AbsenteeismRequest
 from apps.attendance.models import Attendance
 from apps.evaluations.models import PerformanceAssessment
+from apps.interns.forms import EmergencyContactForm, InternProfileForm
 from apps.interns.models import InternProfile
 
 
@@ -199,3 +201,56 @@ def intern_detail(request, intern_id):
     }
 
     return render(request, "interns/intern_detail.html", context)
+
+
+@login_required
+def my_emergency_contacts(request):
+    """View for interns to manage their emergency contact information"""
+    intern_profile = get_object_or_404(InternProfile, user=request.user)
+
+    if request.method == "POST":
+        form = EmergencyContactForm(request.POST, instance=intern_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                "Your emergency contact information has been updated successfully.",
+            )
+            return redirect("interns:my_emergency_contacts")
+    else:
+        form = EmergencyContactForm(instance=intern_profile)
+
+    context = {
+        "form": form,
+        "intern_profile": intern_profile,
+    }
+
+    return render(request, "interns/emergency_contacts.html", context)
+
+
+@login_required
+@supervisor_or_above
+def manage_emergency_contacts(request, intern_id):
+    """View for supervisors/admins to manage intern emergency contact information"""
+    intern_profile = get_object_or_404(
+        InternProfile.objects.select_related("user"), id=intern_id
+    )
+
+    if request.method == "POST":
+        form = EmergencyContactForm(request.POST, instance=intern_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                f"Emergency contact information for {intern_profile.user.get_full_name()} has been updated successfully.",
+            )
+            return redirect("interns:manage_emergency_contacts", intern_id=intern_id)
+    else:
+        form = EmergencyContactForm(instance=intern_profile)
+
+    context = {
+        "form": form,
+        "intern_profile": intern_profile,
+    }
+
+    return render(request, "interns/manage_emergency_contacts.html", context)
