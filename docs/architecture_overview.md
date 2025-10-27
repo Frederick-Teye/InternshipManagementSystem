@@ -21,7 +21,6 @@
 | `attendance`               | Check-ins, geo-validation, approval workflow, history views.                                                       |
 | `absenteeism`              | Time-off requests, approval chain, notifications.                                                                  |
 | `holidays`                 | Branch-level holidays affecting attendance logic.                                                                  |
-| `log`                      | Activity log aggregator spanning all critical actions.                                                             |
 | `notifications` (optional) | Email + in-app notification delivery, templating, scheduling.                                                      |
 
 ## 3. Core Data Model Relationships
@@ -30,15 +29,15 @@
 - `interns.InternProfile` → FK to `schools.School`, optional FK to `schools.AcademicSupervisor`, FK to `branches.Branch`, ManyToMany to `supervisors.EmployeeProfile` for supervisors.
 - `evaluations.PerformanceAssessment` links intern, assessor (supervisor or manager), week number/period, supervisor remarks, intern self assessment (one-to-one per period) captured via nested model or JSON field.
 - `attendance.AttendanceRecord` includes intern, branch, check-in time, check-out (optional), location (geospatial point), approval flag, auto-validated distance column.
-- `absenteeism.AbsenteeismRequest` ties intern, approver (supervisor/manager), status workflow, optional attachments, activity log hook.
-- `log.ActivityLog` uses generic foreign key to reference any model, stores actor, action, metadata JSON.
+- `absenteeism.AbsenteeismRequest` ties intern, approver (supervisor/manager), status workflow, optional attachments, audit log hook.
+- Audit events are written as structured JSON entries to the server log via Python's logging framework instead of a database table.
 
 ## 4. Service Modules & Cross-Cutting Concerns
 
 - **Geo Service:** Abstraction around geopy/PostGIS distance calculations with configurable thresholds per branch.
 - **Notification Service:** Pluggable channels (email via Django EmailBackend, in-app via database) with Celery tasks.
 - **PDF Service:** Wrapper around WeasyPrint/xhtml2pdf for reports and exports.
-- **Audit Middleware:** Signal listeners hooking into create/update/delete events to populate `ActivityLog`.
+- **Audit Logging:** Model signal listeners emit JSON payloads to the `logging` subsystem, which persists to rotating log files and streams to stdout.
 
 ## 5. Configuration & Settings Strategy
 
@@ -59,7 +58,7 @@
 5. **Milestone 4 – Assessments & Absenteeism**
    - Performance assessments (supervisor + self), absenteeism requests, notifications.
 6. **Milestone 5 – Reporting & Logs**
-   - Activity logs UI, CSV/PDF exports, dashboard enhancements, analytics widgets.
+   - File-based audit trail surfacing through log analysis, CSV/PDF exports, dashboard enhancements, analytics widgets.
 7. **Milestone 6 – QA & Hardening**
    - Comprehensive tests, security hardening, production deployment scripts.
 

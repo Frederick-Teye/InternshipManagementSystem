@@ -37,7 +37,6 @@ All core apps have been generated with complete models:
 | **attendance**  | Location-based attendance tracking     | ✅ Complete |
 | **absenteeism** | Absence request management             | ✅ Complete |
 | **holidays**    | Branch holiday management              | ✅ Complete |
-| **log**         | Activity logging system                | ✅ Complete |
 
 ### 4. Core Models Implemented
 
@@ -114,14 +113,12 @@ All core apps have been generated with complete models:
 - Full-day or partial-day designation
 - Date and description
 
-#### log.ActivityLog
+#### Audit Logging
 
-- Generic foreign key for any model
-- Actor tracking (user who performed action)
-- Action description
-- Change history (JSON)
-- Metadata storage
-- IP address and user agent tracking
+- Structured JSON payloads emitted through Python's logging module
+- Rotating file handler persists events to `logs/application.log`
+- Console handler mirrors entries to stdout for Docker visibility
+- Payload includes actor metadata, action description, object reference, IP, and user agent
 
 ### 5. Django Admin Interface
 
@@ -217,11 +214,11 @@ docker-compose down
 - [ ] CSV export functionality
 - [ ] Analytics and statistics views
 
-### Phase 6: Activity Logging Middleware
+### Phase 6: Audit Log Tooling
 
-- [ ] Automatic logging middleware
-- [ ] Log view with search and filtering
-- [ ] User activity timeline
+- [ ] Optional CLI utilities to parse JSON log entries
+- [ ] Dashboard widget surfacing recent audit events
+- [ ] Documentation for shipping logs to centralized observability stack
 
 ### Phase 7: Security Enhancements
 
@@ -271,7 +268,7 @@ docker-compose down
 1. **Custom User Model**: Extends AbstractUser with role field for permission management
 2. **App Structure**: Domain-driven design with separate apps for each business domain
 3. **Geolocation**: Haversine formula for distance calculation (can migrate to PostGIS later)
-4. **Activity Logging**: Generic foreign key for flexible logging across all models
+4. **Activity Logging**: File-based JSON logging via Python's logging framework replacing the database-backed app
 5. **Onboarding**: Token-based system with time-bound, single-use invitations
 
 ### Database Schema

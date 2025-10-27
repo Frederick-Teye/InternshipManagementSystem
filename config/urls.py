@@ -20,7 +20,8 @@ urlpatterns = [
     path("absenteeism/", include("apps.absenteeism.urls")),
     path("notifications/", include("apps.notifications.urls")),
     path("reports/", include("apps.reports.urls")),
-    path("log/", include("apps.log.urls")),
+    # Log views removed - we now write activity and system failures to server log files.
+    # path("log/", include("apps.log.urls")),
 ]
 
 # Serve media files during development

@@ -137,19 +137,19 @@
 
 ---
 
-### 10. ❌ Activity Logging UI (0%)
+### 10. ❌ Audit Log Observability (0%)
 
 **What Exists:**
 
-- ✅ ActivityLog model
+- ✅ File-based JSON logging wired via Python logging (`logs/application.log`)
+- ✅ Console streaming for Docker visibility
 
 **What's Needed:**
 
-- ❌ Automatic logging middleware
-- ❌ Activity log viewer
-- ❌ User activity timeline
-- ❌ Audit trail interface
-- ❌ Log export functionality
+- ❌ CLI or admin tooling to analyze rotating log files
+- ❌ Documentation for forwarding logs to centralized systems
+- ❌ Dashboard widget summarizing recent audit events
+- ❌ Log export functionality (CSV/JSON)
 
 **Priority:** MEDIUM - Compliance/auditing
 

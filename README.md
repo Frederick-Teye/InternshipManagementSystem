@@ -9,7 +9,7 @@ A Django-based platform for hospitals to manage interns, supervisors, attendance
 - Branch management and proximity-based attendance approvals.
 - Weekly/periodic performance assessments with supervisor and self-assessment feedback.
 - Absenteeism request workflows and holiday scheduling.
-- Activity logging for auditability and compliance.
+- File-based JSON audit logging (written to a writable `application.log` with console mirroring).
 - Docker Compose environment with PostgreSQL.
 
 ## Getting Started
@@ -30,10 +30,16 @@ cp .env.example .env
 ### Run with Docker
 
 ```bash
-docker-compose up -d
+docker-compose up
 ```
 
-The application will be available at <http://localhost:8000>. Access the Django admin at `/admin/`.
+Running without `-d` keeps the containers attached so you can observe live Django logs in the terminal. The application will be available at <http://localhost:8000>. Access the Django admin at `/admin/`.
+
+### Logs
+
+- Console output mirrors all log events, so `docker-compose up` (without `-d`) shows them in real time.
+- File-based logs default to a writable location discovered at runtime (set `DJANGO_LOG_DIR` to override).
+- The active log file is named `application.log`; inspect it with `tail -f` for historical context.
 
 **Default Admin Credentials:**
 

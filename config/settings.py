@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
@@ -29,7 +30,6 @@ INSTALLED_APPS = [
     "apps.attendance",
     "apps.absenteeism",
     "apps.holidays",
-    "apps.log",
     "apps.dashboards",
     "apps.notifications",
     "apps.reports",
@@ -146,16 +146,76 @@ DEFAULT_PROXIMITY_THRESHOLD_METERS = int(
     os.environ.get("DEFAULT_PROXIMITY_THRESHOLD_METERS", "150")
 )
 
+
+def _resolve_log_dir() -> Path:
+    """Return a writable directory for log files, trying several fallbacks."""
+    candidates: list[Path] = []
+
+    env_dir = os.environ.get("DJANGO_LOG_DIR")
+    if env_dir:
+        candidates.append(Path(env_dir))
+
+    candidates.extend(
+        [
+            BASE_DIR / "runtime" / "logs",
+            BASE_DIR / "logs",
+            Path.home() / ".ims_logs",
+            Path(tempfile.gettempdir()) / "ims_logs",
+        ]
+    )
+
+    for candidate in candidates:
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            test_file = candidate / ".write_test"
+            with test_file.open("a"):
+                pass
+            try:
+                test_file.unlink()
+            except FileNotFoundError:
+                pass
+            return candidate
+        except Exception:
+            continue
+
+    # Final fallback: current directory (write may still fail but avoids crash)
+    return BASE_DIR
+
+
+LOG_DIR = _resolve_log_dir()
+LOG_FILE = LOG_DIR / "application.log"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        }
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-        }
+            "formatter": "verbose",
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "filename": str(LOG_FILE),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": ["console", "file"],
         "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
     },
 }

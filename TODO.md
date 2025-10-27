@@ -28,27 +28,26 @@ This document lists all features that have been identified but not yet implement
 
 ---
 
-### 2. ActivityLog User Interface
+### 2. Audit Log Analysis Utilities
 
-**Status:** Model exists, no UI  
-**Current State:** `apps/log/models.py` has ActivityLog model  
+**Status:** Not Implemented  
+**Current State:** Audit events are emitted to rotating log files (`logs/application.log`) via Python logging.  
 **What's Missing:**
 
-- View to display activity logs
-- Template for activity log listing
-- Filtering by user, action type, date range
-- Export logs to CSV
-- Admin interface for log management
+- CLI helper to parse JSON log entries for ad-hoc analysis
+- Optional admin dashboard widget that surfaces recent log lines from the file
+- Documentation on tailing logs locally and in Docker
+- Automated archival/rotation beyond the default five backups
 
 **Files to Create:**
 
-- `apps/log/views.py` - Add list_logs view
-- `templates/log/activity_log.html` - Activity log listing page
-- `apps/log/urls.py` - URL patterns for log views
+- `scripts/analyze_logs.py` (optional) - Parse and summarize log events
+- Admin dashboard widget template partial for recent log excerpts
+- README section detailing log file management best practices
 
-**Related Models:**
+**Related Infrastructure:**
 
-- `ActivityLog` in `apps/log/models.py`
+- `config/settings.py` logging configuration pointing to `logs/application.log`
 
 ---
 
@@ -392,15 +391,15 @@ This document lists all features that have been identified but not yet implement
 
 ### 18. Audit Trail Enhancements
 
-**Status:** Basic ActivityLog exists  
+**Status:** File-based JSON audit logging captures key events  
 **What Could Be Added:**
 
 - Track all CRUD operations automatically
 - Store before/after values
-- Audit log search and export
+- Audit log search and export tooling
 - Compliance reporting
 - Data retention policies
-- User activity timeline
+- User activity timeline sourced from log files
 
 ---
 

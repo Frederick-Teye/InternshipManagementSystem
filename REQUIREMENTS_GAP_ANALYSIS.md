@@ -219,23 +219,22 @@
 
 ---
 
-### 9. Activity Logging UI ❌ 0%
+### 9. Audit Log Observability ❌ 0%
 
 **Requirements:**
 
-- ❌ Activity log viewer with search and filtering
-- ❌ User activity timeline
-- ❌ Audit trail for all actions
-- ❌ Log export functionality
-- ❌ Automatic logging middleware
-- ❌ Change history tracking
+- ❌ CLI tools or dashboards to inspect JSON audit logs
+- ❌ User-friendly visualization of recent activity
+- ❌ Log export functionality (CSV/JSON)
+- ❌ Automated shipping to centralized logging (e.g., ELK, Loki)
+- ❌ Documentation for tailing logs in Docker and prod
 
 **Technical Status:**
 
-- ✅ ActivityLog model exists
-- ❌ Logging middleware not implemented
-- ❌ UI views not created
-- ❌ Signal handlers not implemented
+- ✅ Structured JSON audit events emitted to `logs/application.log`
+- ✅ Rotating file handler with five backups in place
+- ❌ Utility scripts and dashboards not implemented
+- ❌ Centralized logging integration pending
 
 **Priority:** MEDIUM - Important for compliance and auditing
 

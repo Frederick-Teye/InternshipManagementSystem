@@ -6,12 +6,12 @@ A condensed version of TODO.md for quick reference.
 
 ## 🔴 Must Implement (Core Functionality)
 
-| Feature                 | Status      | Complexity | Files Affected                 |
-| ----------------------- | ----------- | ---------- | ------------------------------ |
-| **Email Configuration** | ❌ Not Done | Low        | `config/settings.py`, env vars |
-| **Activity Log UI**     | ❌ Not Done | Medium     | `apps/log/views.py`, templates |
-| **Profile Pictures**    | ❌ Not Done | Medium     | forms, templates, media config |
-| **Emergency Contacts**  | ❌ Not Done | Low        | `apps/interns/forms.py`, views |
+| Feature                 | Status      | Complexity | Files Affected                  |
+| ----------------------- | ----------- | ---------- | ------------------------------- |
+| **Email Configuration** | ❌ Not Done | Low        | `config/settings.py`, env vars  |
+| **Audit Log Tooling**   | ❌ Not Done | Medium     | `logs/application.log`, scripts |
+| **Profile Pictures**    | ❌ Not Done | Medium     | forms, templates, media config  |
+| **Emergency Contacts**  | ❌ Not Done | Low        | `apps/interns/forms.py`, views  |
 
 ---
 
@@ -71,7 +71,7 @@ A condensed version of TODO.md for quick reference.
 
 ### Next Week:
 
-4. Build activity log UI
+4. Build audit log analysis tooling
 5. Add search/filtering to lists
 6. Implement document preview
 
