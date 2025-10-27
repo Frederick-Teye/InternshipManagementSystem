@@ -1,0 +1,19 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+{{ block.super }}
+
+<div class="module" style="margin-top: 20px;">
+    <h2>System Management</h2>
+    <table summary="System management tools">
+        <caption>Additional system management tools and resources</caption>
+        <tr>
+            <th scope="row">
+                <a href="{% url 'admin_logs:log_files_list' %}">Log Files</a>
+            </th>
+            <td>Download application and activity log files for monitoring and debugging</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

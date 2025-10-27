@@ -8,13 +8,12 @@ from django.urls import include, path
 
 from apps.dashboards.views import dashboard
 from config.admin_views import log_urls
-from config.admin import admin_site
 
 urlpatterns = [
     path("", lambda request: redirect("accounts:login"), name="home"),
     path("dashboard/", dashboard, name="dashboard"),  # Main dashboard router
     path("admin/", include((log_urls, "admin_logs"), namespace="admin_logs")),
-    path("admin/", admin_site.urls),
+    path("admin/", admin.site.urls),
     path("accounts/", include("apps.accounts.urls")),
     path("dashboards/", include("apps.dashboards.urls")),  # Role-specific dashboards
     path("interns/", include("apps.interns.urls")),
