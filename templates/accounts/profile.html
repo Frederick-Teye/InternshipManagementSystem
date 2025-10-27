@@ -15,7 +15,21 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" novalidate>
+                    <!-- Profile Picture Section -->
+                    <div class="text-center mb-4">
+                        <div class="profile-picture-container mb-3">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle profile-picture" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #dee2e6;">
+                            {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center profile-picture-placeholder" style="width: 120px; height: 120px; border: 3px solid #dee2e6; margin: 0 auto;">
+                                    <i class="fas fa-user fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-3">Profile Picture</p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
                         <div class="row">
@@ -30,6 +44,13 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 {{ form.email|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.profile_picture|as_crispy_field }}
+                                <small class="form-text text-muted">Upload a profile picture (JPG, PNG, GIF). Maximum file size: 5MB.</small>
                             </div>
                         </div>
                         

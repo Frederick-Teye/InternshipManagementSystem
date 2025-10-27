@@ -25,6 +25,9 @@ class User(AbstractUser):
         default=Roles.INTERN,
         help_text="Determines the default permissions and dashboard experience.",
     )
+    profile_picture = models.ImageField(
+        upload_to="profiles/", blank=True, null=True, help_text="User profile picture"
+    )
     is_onboarded = models.BooleanField(default=False)
     onboarding_token = models.UUIDField(null=True, blank=True, editable=False)
     onboarding_token_expires_at = models.DateTimeField(null=True, blank=True)
@@ -53,7 +56,9 @@ class User(AbstractUser):
             return False
         return timezone.now() <= self.onboarding_token_expires_at
 
-    def email_user(self, subject: str, message: str, from_email: str | None = None) -> None:
+    def email_user(
+        self, subject: str, message: str, from_email: str | None = None
+    ) -> None:
         send_mail(subject, message, from_email, [self.email])
 
 

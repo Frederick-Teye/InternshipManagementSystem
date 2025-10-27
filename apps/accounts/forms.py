@@ -14,7 +14,7 @@ class UserProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email"]
+        fields = ["first_name", "last_name", "email", "profile_picture"]
         widgets = {
             "first_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Enter first name"}
@@ -25,11 +25,15 @@ class UserProfileForm(forms.ModelForm):
             "email": forms.EmailInput(
                 attrs={"class": "form-control", "placeholder": "Enter email address"}
             ),
+            "profile_picture": forms.FileInput(
+                attrs={"class": "form-control", "accept": "image/*"}
+            ),
         }
         labels = {
             "first_name": "First Name",
             "last_name": "Last Name",
             "email": "Email Address",
+            "profile_picture": "Profile Picture",
         }
 
     def clean_email(self):
