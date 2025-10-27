@@ -21,7 +21,7 @@ Open your browser and navigate to: **http://localhost:8000**
 ### Intern User
 
 - **Username:** `intern1`
-- **Password:** `intern123`
+- **Password:** `password123`
 - **Role:** Intern
 - **Dashboard Features:**
   - View approved attendance count
@@ -35,7 +35,7 @@ Open your browser and navigate to: **http://localhost:8000**
 ### Supervisor User
 
 - **Username:** `supervisor1`
-- **Password:** `supervisor123`
+- **Password:** `password123`
 - **Role:** Internal Supervisor
 - **Dashboard Features:**
   - View pending attendance approvals
@@ -61,7 +61,7 @@ Open your browser and navigate to: **http://localhost:8000**
 ### Manager User
 
 - **Username:** `manager1`
-- **Password:** `manager123`
+- **Password:** `password123`
 - **Role:** Manager
 - **Dashboard Features:**
   - System-wide overview
