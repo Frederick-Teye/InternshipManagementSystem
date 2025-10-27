@@ -1,0 +1,48 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<h2>Welcome to the Internship Management System!</h2>
+
+<p>Hi {{ user.get_full_name|default:user.username }},</p>
+
+<p>
+    {{ created_by|default:"An administrator" }} just created an account for you in the
+    {% if site_name %}{{ site_name }}{% else %}Internship Management System{% endif %}.
+</p>
+
+<p>Your initial login details are:</p>
+<ul>
+    <li><strong>Username:</strong> {{ user.username }}</li>
+    <li><strong>Email:</strong> {{ user.email }}</li>
+    <li><strong>Temporary password:</strong> {{ temporary_password }}</li>
+</ul>
+
+<p class="alert alert-info">
+    The onboarding link expires on
+    <strong>{{ expires_at|date:"N j, Y, g:i a T" }}</strong>. Please complete the steps before it expires.
+</p>
+
+<p>
+    Click the button below to confirm your details and set a new password for your account.
+</p>
+
+<p><a href="{{ onboarding_url }}" class="btn">Complete Onboarding</a></p>
+
+<p>If the button does not work, copy and paste this link into your browser:</p>
+<p><a href="{{ onboarding_url }}">{{ onboarding_url }}</a></p>
+
+<p>
+    Once onboarding is complete, you can access the dashboard here:
+    <a href="{{ login_url }}">{{ login_url }}</a>.
+</p>
+
+<p>
+    <strong>Security reminder:</strong> After your first login, go to <em>My Profile → Change Password</em>
+    and replace the temporary password above with one you choose.
+</p>
+
+<p>If you run into any problems, please contact your supervisor or administrator.</p>
+
+<p>See you soon,<br>
+The Internship Management Team</p>
+{% endblock %}

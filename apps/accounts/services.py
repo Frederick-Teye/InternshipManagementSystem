@@ -1,13 +1,20 @@
-"""
-Email services for the Internship Management System
-"""
+"""Email services for the Internship Management System."""
 
 from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+
+if TYPE_CHECKING:  # pragma: no cover - import for type checking only
+    from apps.accounts.models import User
+
+
+logger = logging.getLogger(__name__)
 
 
 class EmailService:
@@ -34,15 +41,29 @@ class EmailService:
         Returns:
             bool: True if email was sent successfully
         """
+        if not recipient_list:
+            logger.warning("Attempted to send email without recipients: %s", subject)
+            return False
+
+        valid_recipients = [email for email in recipient_list if email]
+        if len(valid_recipients) != len(recipient_list):
+            logger.warning(
+                "Email recipients contained empty values, email '%s' not sent.", subject
+            )
+            return False
+
         try:
-            send_mail(
+            sent_count = send_mail(
                 subject=subject,
                 message=message,
                 from_email=from_email or settings.DEFAULT_FROM_EMAIL,
-                recipient_list=recipient_list,
+                recipient_list=valid_recipients,
                 html_message=html_message,
                 fail_silently=False,
             )
+            if sent_count <= 0:
+                logger.warning("Email backend returned 0 for '%s'", subject)
+                return False
             return True
         except Exception:
             return False
@@ -69,6 +90,12 @@ class EmailService:
             bool: True if email was sent successfully
         """
         try:
+            if not recipient_list:
+                logger.warning(
+                    "Attempted to send template email '%s' without recipients.", subject
+                )
+                return False
+
             html_message = render_to_string(f"emails/{template_name}.html", context)
             plain_message = strip_tags(html_message)
 
@@ -151,4 +178,47 @@ class EmailService:
             template_name="notification_email",
             context=template_context,
             recipient_list=[recipient.email],
+        )
+
+    @staticmethod
+    def send_onboarding_email(
+        user: "User",
+        temporary_password: str,
+        onboarding_url: str,
+        login_url: str,
+        expires_at,
+        created_by: str | None = None,
+    ) -> bool:
+        """
+        Send an onboarding email with credentials and onboarding instructions.
+
+        Args:
+            user: Newly created user instance.
+            temporary_password: The temporary password assigned to the user.
+            onboarding_url: Absolute URL to the onboarding flow.
+            login_url: Absolute URL to the login page.
+            expires_at: Datetime when the onboarding link expires.
+            created_by: Optional name of the administrator who created the account.
+
+        Returns:
+            bool: True if the email was sent successfully.
+        """
+
+        context = {
+            "user": user,
+            "temporary_password": temporary_password,
+            "onboarding_url": onboarding_url,
+            "login_url": login_url,
+            "expires_at": expires_at,
+            "created_by": created_by,
+            "site_name": getattr(settings, "SITE_NAME", "Internship Management System"),
+        }
+
+        subject = "Your Internship Management System account"
+
+        return EmailService.send_template_email(
+            subject=subject,
+            template_name="onboarding_invitation",
+            context=context,
+            recipient_list=[user.email],
         )

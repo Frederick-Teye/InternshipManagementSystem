@@ -11,6 +11,7 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView,
 )
 from django.core.mail import send_mail
+from django.db import transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -72,20 +73,42 @@ def logout_view(request):
 class OnboardingView(TemplateView):
     template_name = "accounts/onboarding.html"
 
+    @staticmethod
+    def _ensure_role_profiles(user: User) -> None:
+        """Create role-specific profile records when missing."""
+        if user.role == User.Roles.INTERN:
+            from apps.interns.models import InternProfile
+
+            InternProfile.objects.get_or_create(user=user)
+        elif user.role in {
+            User.Roles.SUPERVISOR,
+            User.Roles.MANAGER,
+            User.Roles.EMPLOYEE,
+        }:
+            from apps.supervisors.models import EmployeeProfile
+
+            EmployeeProfile.objects.get_or_create(user=user)
+
     def get(self, request, token, *args, **kwargs):
         try:
             user = User.objects.get(onboarding_token=token)
         except User.DoesNotExist:
-            messages.error(request, "Invalid or expired onboarding link.")
-            return redirect("login")
+            messages.error(request, "This onboarding link is no longer valid.")
+            if request.user.is_authenticated:
+                return redirect("dashboard")
+            return redirect("accounts:login")
 
         if not user.onboarding_link_is_valid:
             messages.error(request, "This onboarding link has expired.")
-            return redirect("login")
+            if request.user.is_authenticated:
+                return redirect("dashboard")
+            return redirect("accounts:login")
 
         if user.is_onboarded:
             messages.info(request, "You have already completed onboarding.")
-            return redirect("login")
+            if request.user.is_authenticated:
+                return redirect("dashboard")
+            return redirect("accounts:login")
 
         context = self.get_context_data(user=user)
         return self.render_to_response(context)
@@ -94,16 +117,16 @@ class OnboardingView(TemplateView):
         try:
             user = User.objects.get(onboarding_token=token)
         except User.DoesNotExist:
-            messages.error(request, "Invalid onboarding link.")
-            return redirect("login")
+            messages.error(request, "This onboarding link is no longer valid.")
+            return redirect("accounts:login")
 
         if not user.onboarding_link_is_valid:
             messages.error(request, "This onboarding link has expired.")
-            return redirect("login")
+            return redirect("accounts:login")
 
         if user.is_onboarded:
             messages.info(request, "You have already completed onboarding.")
-            return redirect("login")
+            return redirect("dashboard")
 
         # Process onboarding form
         password1 = request.POST.get("password1")
@@ -123,13 +146,16 @@ class OnboardingView(TemplateView):
             messages.error(request, "Password must be at least 8 characters long.")
             return self.render_to_response(self.get_context_data(user=user))
 
-        # Update user profile
-        user.first_name = first_name
-        user.last_name = last_name
-        user.set_password(password1)
-        user.is_onboarded = True
-        user.clear_onboarding_token()
-        user.save()
+        # Update user profile and scaffold related role data
+        with transaction.atomic():
+            user.first_name = first_name
+            user.last_name = last_name
+            user.set_password(password1)
+            user.is_onboarded = True
+            user.clear_onboarding_token()
+            user.save()
+
+            self._ensure_role_profiles(user)
 
         # Log the user in
         login(request, user)
