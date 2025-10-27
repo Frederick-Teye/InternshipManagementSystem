@@ -50,6 +50,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.ActivityLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -157,8 +158,8 @@ def _resolve_log_dir() -> Path:
 
     candidates.extend(
         [
-            BASE_DIR / "runtime" / "logs",
             BASE_DIR / "logs",
+            BASE_DIR / "runtime" / "logs",
             Path.home() / ".ims_logs",
             Path(tempfile.gettempdir()) / "ims_logs",
         ]
@@ -184,6 +185,7 @@ def _resolve_log_dir() -> Path:
 
 LOG_DIR = _resolve_log_dir()
 LOG_FILE = LOG_DIR / "application.log"
+ACTIVITY_LOG_FILE = LOG_DIR / "activity.log"
 
 LOGGING = {
     "version": 1,
@@ -206,6 +208,14 @@ LOGGING = {
             "backupCount": 5,
             "formatter": "verbose",
         },
+        "activity_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "filename": str(ACTIVITY_LOG_FILE),
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 3,
+            "formatter": "verbose",
+        },
     },
     "root": {
         "handlers": ["console", "file"],
@@ -215,6 +225,11 @@ LOGGING = {
         "django": {
             "handlers": ["console", "file"],
             "level": "WARNING",
+            "propagate": False,
+        },
+        "ims.activity": {
+            "handlers": ["console", "activity_file"],
+            "level": "INFO",
             "propagate": False,
         },
     },
