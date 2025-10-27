@@ -1,0 +1,25 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+<h2>Welcome to the Internship Management System!</h2>
+
+<p>Dear {{ user_name }},</p>
+
+<p>Welcome to the Internship Management System! Your account has been successfully created.</p>
+
+<p>You can now:</p>
+<ul>
+    <li>Log in to your dashboard</li>
+    <li>Mark your attendance</li>
+    <li>View your assessments and evaluations</li>
+    <li>Submit absence requests</li>
+    <li>Access reports and documents</li>
+</ul>
+
+<p><a href="{{ login_url }}" class="btn btn-primary">Access Your Dashboard</a></p>
+
+<p>If you have any questions, please contact your supervisor or administrator.</p>
+
+<p>Best regards,<br>
+The Internship Management Team</p>
+{% endblock %}

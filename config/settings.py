@@ -129,9 +129,16 @@ EMAIL_BACKEND = os.environ.get(
         else "django.core.mail.backends.smtp.EmailBackend"
     ),
 )
+EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("DJANGO_EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_USE_SSL = os.environ.get("DJANGO_EMAIL_USE_SSL", "false").lower() == "true"
+EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DJANGO_DEFAULT_FROM_EMAIL", "noreply@internship.local"
 )
+SERVER_EMAIL = os.environ.get("DJANGO_SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
 ONBOARDING_LINK_TTL_HOURS = int(os.environ.get("ONBOARDING_LINK_TTL_HOURS", "24"))
 DEFAULT_ASSESSMENT_FREQUENCY = os.environ.get("DEFAULT_ASSESSMENT_FREQUENCY", "weekly")
