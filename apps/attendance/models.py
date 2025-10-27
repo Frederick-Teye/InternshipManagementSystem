@@ -39,10 +39,10 @@ class Attendance(models.Model):
     )
     check_in_time = models.DateTimeField(default=timezone.now)
     check_out_time = models.DateTimeField(null=True, blank=True)
-    latitude = models.DecimalField(max_digits=12, decimal_places=9)
-    longitude = models.DecimalField(max_digits=12, decimal_places=9)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
     location_accuracy_m = models.DecimalField(
-        max_digits=12, decimal_places=9, null=True, blank=True
+        max_digits=10, decimal_places=7, null=True, blank=True
     )
     approval_status = models.CharField(
         max_length=32, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING

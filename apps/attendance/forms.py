@@ -17,14 +17,14 @@ class AttendanceMarkForm(forms.ModelForm):
         required=True,
     )
     longitude = forms.DecimalField(
-        max_digits=12,
-        decimal_places=9,
+        max_digits=10,
+        decimal_places=7,
         widget=forms.HiddenInput(),
         required=True,
     )
     location_accuracy_m = forms.DecimalField(
-        max_digits=12,
-        decimal_places=9,
+        max_digits=10,
+        decimal_places=7,
         widget=forms.HiddenInput(),
         required=False,
     )
