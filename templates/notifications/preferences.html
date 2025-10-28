@@ -97,31 +97,6 @@
                 <small class="text-muted">Onboarding status updates and task reminders</small>
               </label>
             </div>
-
-            <hr>
-
-            <div class="mb-3">
-              <label class="form-label"><strong><i class="fas fa-clock"></i> Email Digest Options</strong></label>
-              <p class="text-muted small">Instead of individual emails, receive a summary digest</p>
-              
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" 
-                       name="daily_digest" id="daily_digest" 
-                       {% if preferences.daily_digest %}checked{% endif %}>
-                <label class="form-check-label" for="daily_digest">
-                  <strong>Daily digest</strong> - Receive one summary email per day
-                </label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" 
-                       name="weekly_digest" id="weekly_digest" 
-                       {% if preferences.weekly_digest %}checked{% endif %}>
-                <label class="form-check-label" for="weekly_digest">
-                  <strong>Weekly digest</strong> - Receive one summary email per week
-                </label>
-              </div>
-              <small class="text-muted">Note: Digest options work alongside individual email preferences</small>
-            </div>
           </div>
 
           <hr>

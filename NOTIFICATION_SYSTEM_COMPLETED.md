@@ -209,7 +209,6 @@ The comprehensive notification system has been successfully implemented for the 
 ✅ Bulk "mark all as read" operation  
 ✅ Configurable notification preferences  
 ✅ Category-specific email settings  
-✅ Email digest options (instant/daily/weekly)  
 ✅ Visual distinction between read/unread  
 ✅ Direct action links in notifications  
 ✅ Timestamp with relative time display

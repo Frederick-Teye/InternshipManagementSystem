@@ -109,10 +109,6 @@ def notification_preferences(request):
             request.POST.get("email_on_onboarding") == "on"
         )
 
-        # Update digest preferences
-        preferences.daily_digest = request.POST.get("daily_digest") == "on"
-        preferences.weekly_digest = request.POST.get("weekly_digest") == "on"
-
         preferences.save()
 
         messages.success(request, "✓ Notification preferences updated successfully!")
