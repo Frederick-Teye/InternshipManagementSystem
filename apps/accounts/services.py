@@ -110,6 +110,48 @@ class EmailService:
             return False
 
     @staticmethod
+    def send_notification_email_direct(
+        subject: str,
+        template_name: str,
+        context: dict,
+        recipient_list: list[str],
+        from_email: str | None = None,
+    ) -> bool:
+        """
+        Send an email using a Django template with direct path (no emails/ prefix)
+
+        Args:
+            subject: Email subject
+            template_name: Full template path (e.g., 'notifications/email/notification_email.html')
+            context: Template context variables
+            recipient_list: List of recipient email addresses
+            from_email: Optional sender email
+
+        Returns:
+            bool: True if email was sent successfully
+        """
+        try:
+            if not recipient_list:
+                logger.warning(
+                    "Attempted to send template email '%s' without recipients.", subject
+                )
+                return False
+
+            html_message = render_to_string(template_name, context)
+            plain_message = strip_tags(html_message)
+
+            return EmailService.send_email(
+                subject=subject,
+                message=plain_message,
+                recipient_list=recipient_list,
+                html_message=html_message,
+                from_email=from_email,
+            )
+        except Exception as e:
+            logger.error(f"Error sending notification email: {e}")
+            return False
+
+    @staticmethod
     def send_welcome_email(user_email: str, user_name: str) -> bool:
         """Send welcome email to new users"""
         subject = "Welcome to the Internship Management System"
@@ -173,9 +215,9 @@ class EmailService:
         if context:
             template_context.update(context)
 
-        return EmailService.send_template_email(
+        return EmailService.send_notification_email_direct(
             subject=subject,
-            template_name="notification_email",
+            template_name="notifications/email/notification_email.html",
             context=template_context,
             recipient_list=[recipient.email],
         )

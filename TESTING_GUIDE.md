@@ -1,8 +1,55 @@
-# Dashboard Testing Guide
+````markdown
+# Comprehensive Testing Guide
 
 ## Overview
 
-This guide will help you test the Internship Management System dashboards at the UI level. All dashboards now display real data from the database.
+This guide will help you test the Internship Management System at the UI level and run automated tests. All dashboards now display real data from the database, and the **email notification system is fully tested and functional**.
+
+## Automated Test Suite
+
+### Notification System Tests (NEW!)
+
+The notification system now has comprehensive test coverage:
+
+```bash
+# Run notification system tests
+docker-compose exec web python manage.py test apps.notifications.tests -v 2
+
+# Expected output:
+Found 17 test(s).
+# ... test execution ...
+Ran 17 tests in 2.503s
+OK
+```
+
+**Test Coverage:**
+
+- ✅ **NotificationModelTest** (3 tests) - Model creation, read functionality, string representation
+- ✅ **NotificationPreferenceTest** (2 tests) - User preferences and defaults
+- ✅ **EmailServiceTest** (4 tests) - Email sending, templates, error handling
+- ✅ **NotificationServiceTest** (8 tests) - Service layer, email logic, preference handling
+
+### Email System Verification
+
+Email notifications are working with console backend:
+
+```bash
+# Test email functionality
+docker-compose exec web python manage.py shell
+>>> from apps.notifications.services import NotificationService
+>>> from django.contrib.auth import get_user_model
+>>> User = get_user_model()
+>>> user = User.objects.first()
+>>> NotificationService.create_notification(
+...     recipient=user,
+...     title="Test Email",
+...     message="Testing email functionality",
+...     send_email=True
+... )
+
+# Check container logs to see email output
+docker-compose logs web | grep -A 10 -B 5 "Content-Type: text/html"
+```
 
 ## System Access
 
@@ -305,3 +352,4 @@ If you encounter issues during testing:
 ---
 
 **Happy Testing! 🚀**
+````

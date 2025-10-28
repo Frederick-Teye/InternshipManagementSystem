@@ -172,8 +172,8 @@ class NotificationService:
         notification: Notification, preferences: NotificationPreference
     ) -> bool:
         """Check if email should be sent based on user preferences"""
-        if not preferences.in_app_notifications:
-            return False
+        # Note: in_app_notifications and email notifications are independent
+        # Users can have emails enabled even if in-app notifications are disabled
 
         category_mapping = {
             "attendance": preferences.email_on_attendance_approval,
