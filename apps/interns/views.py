@@ -11,7 +11,7 @@ from apps.absenteeism.models import AbsenteeismRequest
 from apps.attendance.models import Attendance
 from apps.evaluations.models import PerformanceAssessment
 from apps.interns.forms import EmergencyContactForm, InternProfileForm
-from apps.interns.models import InternProfile
+from apps.interns.models import InternProfile, InternType
 
 
 @login_required
@@ -63,7 +63,7 @@ def intern_list(request):
     # Filter by intern type
     intern_type_filter = request.GET.get("intern_type", "")
     if intern_type_filter:
-        interns = interns.filter(intern_type=intern_type_filter)
+        interns = interns.filter(intern_type_id=intern_type_filter)
 
     # Annotate with statistics
     interns = interns.annotate(
@@ -91,7 +91,7 @@ def intern_list(request):
         "intern_type_filter": intern_type_filter,
         "branches": branches,
         "schools": schools,
-        "intern_types": InternProfile.InternType.choices,
+        "intern_types": InternType.objects.all(),
         "total_count": interns.count(),
     }
 

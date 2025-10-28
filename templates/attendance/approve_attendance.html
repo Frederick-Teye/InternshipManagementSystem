@@ -23,7 +23,7 @@
               <strong>Email:</strong> {{ attendance.intern.user.email }}
             </div>
             <div class="col-md-6 mt-2">
-              <strong>Intern Type:</strong> {{ attendance.intern.get_intern_type_display }}
+              <strong>Intern Type:</strong> {{ attendance.intern.intern_type.display_name|default:"N/A" }}
             </div>
             <div class="col-md-6 mt-2">
               <strong>School:</strong> {{ attendance.intern.school|default:"Not specified" }}

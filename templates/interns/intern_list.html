@@ -39,9 +39,9 @@
             <label for="intern_type" class="form-label">Intern Type</label>
             <select name="intern_type" id="intern_type" class="form-select">
               <option value="">All Types</option>
-              {% for value, label in intern_types %}
-                <option value="{{ value }}" {% if intern_type_filter == value %}selected{% endif %}>
-                  {{ label }}
+              {% for intern_type in intern_types %}
+                <option value="{{ intern_type.id }}" {% if intern_type_filter == intern_type.id|stringformat:"s" %}selected{% endif %}>
+                  {{ intern_type.display_name }}
                 </option>
               {% endfor %}
             </select>
@@ -118,7 +118,7 @@
                       </div>
                     </td>
                     <td>
-                      <span class="badge bg-secondary">{{ intern.get_intern_type_display }}</span>
+                      <span class="badge bg-secondary">{{ intern.intern_type.display_name|default:"N/A" }}</span>
                     </td>
                     <td>{{ intern.branch.name }}</td>
                     <td>
