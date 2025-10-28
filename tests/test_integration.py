@@ -24,13 +24,15 @@ class UserWorkflowTest(BaseTestCase):
 
     def test_intern_onboarding_workflow(self):
         """Test complete intern onboarding process"""
-        # Step 1: Create a new user
+        # Step 1: Create a new user with proper role and onboarding status
         new_user = User.objects.create_user(
             username="new_intern",
             email="newintern@test.com",
             password="testpass123",
             first_name="New",
             last_name="Intern",
+            role=User.Roles.INTERN,
+            is_onboarded=True,
         )
 
         # Step 2: Login
@@ -55,10 +57,8 @@ class UserWorkflowTest(BaseTestCase):
         # Step 4: Verify profile creation
         self.assertTrue(InternProfile.objects.filter(user=new_user).exists())
 
-        # Step 5: Test access to intern views
-        response = self.client.get(
-            reverse("interns:intern_detail", args=[intern_profile.id])
-        )
+        # Step 5: Test access to intern dashboard (what interns CAN access)
+        response = self.client.get(reverse("dashboards:intern"))
         self.assertEqual(response.status_code, 200)
 
     def test_supervisor_workflow(self):
@@ -66,13 +66,13 @@ class UserWorkflowTest(BaseTestCase):
         self.login_user(self.supervisor_user)
 
         # Step 1: View assigned interns
-        response = self.client.get(reverse("interns:intern_list"))
+        response = self.client.get(reverse("interns:list"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.intern_profile.user.get_full_name())
 
         # Step 2: View specific intern details
         response = self.client.get(
-            reverse("interns:intern_detail", args=[self.intern_profile.id])
+            reverse("interns:detail", args=[self.intern_profile.id])
         )
         self.assertEqual(response.status_code, 200)
 
@@ -92,7 +92,7 @@ class UserWorkflowTest(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Step 3: Access log files (custom admin feature)
-        response = self.client.get(reverse("admin:log_files_list"))
+        response = self.client.get(reverse("admin_logs:log_files_list"))
         self.assertEqual(response.status_code, 200)
 
 
@@ -212,12 +212,13 @@ class PermissionIntegrationTest(BaseTestCase):
         """Test that role-based access control works across views"""
         test_cases = [
             # (user, url, expected_status)
-            (self.admin_user, reverse("interns:intern_list"), 200),
-            (self.supervisor_user, reverse("interns:intern_list"), 200),
+            (self.admin_user, reverse("interns:list"), 200),
+            (self.supervisor_user, reverse("interns:list"), 200),
+            # Interns should be redirected (302) since they don't have supervisor_or_above permission
             (
                 self.intern_user,
-                reverse("interns:intern_detail", args=[self.intern_profile.id]),
-                200,
+                reverse("interns:detail", args=[self.intern_profile.id]),
+                302,
             ),
         ]
 
@@ -234,14 +235,18 @@ class PermissionIntegrationTest(BaseTestCase):
         """Test that users can only access appropriate data"""
         # Create another supervisor with their own intern
         other_supervisor_user = self.create_user(
-            username="other_supervisor", email="other@test.com"
+            username="other_supervisor",
+            email="other@test.com",
+            role=User.Roles.SUPERVISOR,
+            is_onboarded=True,
         )
 
         # Login as original supervisor
         self.login_user(self.supervisor_user)
 
         # Should see their own interns
-        response = self.client.get(reverse("interns:intern_list"))
+        response = self.client.get(reverse("interns:list"))
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.intern_profile.user.get_full_name())
 
 
@@ -253,7 +258,7 @@ class ErrorHandlingTest(BaseTestCase):
         self.login_user(self.admin_user)
 
         # Test accessing non-existent intern
-        response = self.client.get(reverse("interns:intern_detail", args=[99999]))
+        response = self.client.get(reverse("interns:detail", args=[99999]))
         self.assertEqual(response.status_code, 404)
 
     def test_form_error_handling(self):
@@ -298,7 +303,7 @@ class PerformanceTest(BaseTestCase):
 
         # Test list view performance
         self.login_user(self.admin_user)
-        response = self.client.get(reverse("interns:intern_list"))
+        response = self.client.get(reverse("interns:list"))
         self.assertEqual(response.status_code, 200)
 
         # Verify pagination works with large dataset
@@ -313,5 +318,5 @@ class PerformanceTest(BaseTestCase):
         self.login_user(self.admin_user)
 
         with self.assertNumQueries(10):  # Adjust based on expected query count
-            response = self.client.get(reverse("interns:intern_list"))
+            response = self.client.get(reverse("interns:list"))
             self.assertEqual(response.status_code, 200)

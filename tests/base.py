@@ -45,14 +45,27 @@ class BaseTestCase(TestCase):
 
         # Create test users
         self.admin_user = self.create_user(
-            username="admin", email="admin@test.com", is_staff=True, is_superuser=True
+            username="admin",
+            email="admin@test.com",
+            is_staff=True,
+            is_superuser=True,
+            role=User.Roles.ADMIN,
+            is_onboarded=True,
         )
 
         self.supervisor_user = self.create_user(
-            username="supervisor1", email="supervisor@test.com"
+            username="supervisor1",
+            email="supervisor@test.com",
+            role=User.Roles.SUPERVISOR,
+            is_onboarded=True,
         )
 
-        self.intern_user = self.create_user(username="intern1", email="intern@test.com")
+        self.intern_user = self.create_user(
+            username="intern1",
+            email="intern@test.com",
+            role=User.Roles.INTERN,
+            is_onboarded=True,
+        )
 
         # Create test supervisor
         self.supervisor = EmployeeProfile.objects.create(
