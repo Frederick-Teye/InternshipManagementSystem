@@ -29,6 +29,13 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       # Email Configuration - Using console backend for development
+      # For production, replace with SMTP backend and credentials:
+      # DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      # DJANGO_EMAIL_HOST: "smtp.gmail.com"
+      # DJANGO_EMAIL_PORT: "587"
+      # DJANGO_EMAIL_USE_TLS: "true"
+      # DJANGO_EMAIL_HOST_USER: "your-email@gmail.com"
+      # DJANGO_EMAIL_HOST_PASSWORD: "your-app-password"
       DJANGO_EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       DJANGO_DEFAULT_FROM_EMAIL: "noreply@internship.local"
 
