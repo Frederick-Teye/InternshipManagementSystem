@@ -18,7 +18,6 @@ A comprehensive Django-based platform for hospitals and organisations to manage 
 - [Testing](#testing)
 - [Project Structure](#project-structure)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -351,6 +350,3 @@ internship_management_system/
 
 ---
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
