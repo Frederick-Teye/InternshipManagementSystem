@@ -92,3 +92,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+# Cookies
+cookies.txt
+
+# Runtime logs
+runtime/
+
+# Test output
+test_results.log
