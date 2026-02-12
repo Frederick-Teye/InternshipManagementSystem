@@ -99,4 +99,6 @@ cookies.txt
 runtime/
 
 # Test output
-test_results.log
+test_results.log\
+
+USER_CREDENTIALS.md
